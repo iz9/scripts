@@ -28,7 +28,7 @@ chmod -R +x "$TEMP_DIR"
 
 # Run the main installation script
 cd "$TEMP_DIR"
-./install.mac.sh
+./install.mac.sh "$TEMP_DIR"
 
 # Cleanup
 #cd

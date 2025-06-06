@@ -1,7 +1,8 @@
 #!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROGRESS_FILE="/tmp/postinstall_progress"
+TEMP_DIR="${1:-/tmp}"  # Use provided TEMP_DIR or default to /tmp
+PROGRESS_FILE="${TEMP_DIR}/postinstall_progress"
 
 # Function to run script in new terminal tab
 run_script_and_wait() {
@@ -24,40 +25,19 @@ run_script_and_wait() {
 
 # Function to restart current terminal and continue script
 restart_and_continue() {
-    # Store the window/tab ID where the script was initially started
-    if [[ ! -f "/tmp/initial_terminal_$$" ]]; then
-        if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]; then
-            osascript -e 'tell application "Terminal" to id of window 1' > "/tmp/initial_terminal_$$"
-        elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
-            osascript -e 'tell application "iTerm2" to id of current tab of current window' > "/tmp/initial_terminal_$$"
-        fi
-    fi
-
-    local initial_id=$(cat "/tmp/initial_terminal_$$")
-
     if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]; then
         osascript -e "tell application \"Terminal\"
-            set initialWindow to (window id $initial_id)
-            do script \"cd '$SCRIPT_DIR' && '$0'\"
-            repeat with w in (windows where id is not $initial_id)
-                if w is not equal to initialWindow then
-                    close w
-                end if
-            end repeat
+            set currentWindow to window 1
+            tell currentWindow
+                set custom title to \"Restarting...\"
+                do script \"cd '$SCRIPT_DIR' && '$0' '$TEMP_DIR'\" in selected tab of currentWindow
+            end tell
         end tell"
     elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
         osascript -e "tell application \"iTerm2\"
-            tell current window
-                create tab with default profile
-                tell current session
-                    write text \"cd '$SCRIPT_DIR' && '$0'\"
-                end tell
-                set newTabId to id of current tab
-                repeat with t in tabs
-                    if id of t is not equal to $initial_id and id of t is not equal to newTabId then
-                        close t
-                    end if
-                end repeat
+            tell current session of current window
+                set name to \"Restarting...\"
+                write text \"clear && cd '$SCRIPT_DIR' && '$0' '$TEMP_DIR'\"
             end tell
         end tell"
     fi
@@ -182,7 +162,7 @@ main() {
     fi
 
     # Cleanup
-    rm -f "$PROGRESS_FILE"
+    rm -f "$TEMP_DIR"
     echo "Installation completed!"
 }
 
