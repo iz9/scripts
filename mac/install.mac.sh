@@ -6,19 +6,42 @@ PROGRESS_FILE="/tmp/postinstall_progress"
 # Function to run script in new terminal tab
 run_script_and_wait() {
     local script_path="$1"
-    local temp_done_file="/tmp/script_done_$$_$(date +%s)"
 
-    # Make script executable
+    echo "Running ${script_path##*/}..."
     chmod +x "$script_path"
+
+    # Execute script and store exit status
+    "$script_path"
+    local exit_status=$?
+
+    if [ $exit_status -eq 0 ]; then
+        echo "${script_path##*/} completed successfully!"
+    else
+        echo "Error: ${script_path##*/} failed with exit code $exit_status"
+        exit $exit_status
+    fi
+}
+
+# Function to restart current terminal and continue script
+restart_and_continue() {
+    # Store the window/tab ID where the script was initially started
+    if [[ ! -f "/tmp/initial_terminal_$$" ]]; then
+        if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]; then
+            osascript -e 'tell application "Terminal" to id of window 1' > "/tmp/initial_terminal_$$"
+        elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
+            osascript -e 'tell application "iTerm2" to id of current tab of current window' > "/tmp/initial_terminal_$$"
+        fi
+    fi
+
+    local initial_id=$(cat "/tmp/initial_terminal_$$")
 
     if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]; then
         osascript -e "tell application \"Terminal\"
-            activate
-            set currentTab to do script \"$script_path && touch $temp_done_file\"
-            repeat
-                delay 1
-                if not busy of currentTab then
-                    exit repeat
+            set initialWindow to (window id $initial_id)
+            do script \"cd '$SCRIPT_DIR' && '$0'\"
+            repeat with w in (windows where id is not $initial_id)
+                if w is not equal to initialWindow then
+                    close w
                 end if
             end repeat
         end tell"
@@ -27,34 +50,14 @@ run_script_and_wait() {
             tell current window
                 create tab with default profile
                 tell current session
-                    write text \"$script_path && touch $temp_done_file\"
-                end tell
-            end tell
-        end tell"
-    fi
-
-    # Wait for the script to complete
-    while [ ! -f "$temp_done_file" ]; do
-        echo "Waiting for ${script_path##*/} to complete..."
-        sleep 2
-    done
-
-    # Cleanup
-    rm -f "$temp_done_file"
-    echo "${script_path##*/} completed!"
-}
-
-# Function to restart current terminal and continue script
-restart_and_continue() {
-    if [[ "$TERM_PROGRAM" == "Apple_Terminal" ]]; then
-        osascript -e "tell application \"Terminal\" to do script \"cd '$SCRIPT_DIR' && '$0'\""
-    elif [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
-        osascript -e "tell application \"iTerm2\"
-            tell current window
-                create tab with default profile
-                tell current session
                     write text \"cd '$SCRIPT_DIR' && '$0'\"
                 end tell
+                set newTabId to id of current tab
+                repeat with t in tabs
+                    if id of t is not equal to $initial_id and id of t is not equal to newTabId then
+                        close t
+                    end if
+                end repeat
             end tell
         end tell"
     fi
