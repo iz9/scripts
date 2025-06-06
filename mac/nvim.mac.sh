@@ -15,11 +15,11 @@ nvim() {
 
     # Install dependencies
     local dependencies=(
-        "ripgrep"      # для быстрого поиска
-        "fd"           # альтернатива find
-        "tree-sitter"  # для улучшенного подсветки синтаксиса
-        "lazygit"      # TUI для git
-        "fzf"          # нечеткий поиск
+        "ripgrep"
+        "fd"
+        "tree-sitter"
+        "lazygit"
+        "fzf"
     )
 
     for dep in "${dependencies[@]}"; do
@@ -206,13 +206,13 @@ require("lazy").setup({
         config = true,
     },
 
-    -- Подсветка скопированного текста
+    -- copy text highlight
     {
         "machakann/vim-highlightedyank",
         event = "VeryLazy",
     },
 
-    -- Комментирование кода
+    -- code commentary
     {
         "numToStr/Comment.nvim",
         event = "VeryLazy",
@@ -226,7 +226,7 @@ require("lazy").setup({
         },
     },
 
-    -- Улучшенная навигация
+    -- enhanced navigation
     {
         "folke/flash.nvim",
         event = "VeryLazy",
@@ -239,7 +239,7 @@ require("lazy").setup({
         },
     },
 
-    -- Быстрая навигация по строке
+    -- fast string navigation
     {
         "jinh0/eyeliner.nvim",
         event = "VeryLazy",
@@ -252,7 +252,7 @@ require("lazy").setup({
     },
 })
 
--- Подсветка yanked текста
+-- yanked highlight
 vim.api.nvim_create_autocmd('TextYankPost', {
     callback = function()
         vim.highlight.on_yank({ timeout = 300 })

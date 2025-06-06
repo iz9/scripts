@@ -13,26 +13,10 @@ CASK_NAMES=(
     "commander-one"
     "readdle-spark"
     "kap"
-    "rectangle"
     "openvpn-connect"
     "slack"
     "zoom"
     "firefox"
-)
-
-APP_NAMES=(
-    "JetBrains Toolbox"
-    "TickTick"
-    "Telegram"
-    "Obsidian"
-    "Commander One"
-    "Spark"
-    "Kap"
-    "Rectangle"
-    "OpenVPN Connect"
-    "Slack"
-    "Zoom"
-    "Firefox"
 )
 
 install_gui_apps() {
@@ -41,33 +25,22 @@ install_gui_apps() {
     local i
     for i in "${!CASK_NAMES[@]}"; do
         cask_name="${CASK_NAMES[$i]}"
-        app_name="${APP_NAMES[$i]}"
-
-        log "Installing $app_name..."
 
         # Install application
         if ! install_cask_or_upgrade "$cask_name"; then
-            error "Failed to install $app_name"
+            error "Failed to install $cask_name"
             ask_continue
             continue
         fi
 
-        # Launch application
-        log "Launching $app_name for initial setup..."
-        open -a "$app_name"
-
         # Wait for user confirmation
         echo
-        echo "Please complete initial setup for $app_name"
+        echo "Please complete initial setup for $cask_name"
         echo "1. Configure the application according to your preferences"
         echo "2. Once done, close the application"
         read -p "Press Enter when you're ready to continue with the next application..."
 
-        # Kill application to ensure clean state for next launch
-        killall "$app_name" 2>/dev/null || true
-        sleep 2
-
-        log "$app_name installation and configuration completed!"
+        log "$cask_name installation and configuration completed!"
         echo
     done
 

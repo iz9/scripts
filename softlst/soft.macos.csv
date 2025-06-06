@@ -18,7 +18,6 @@ Zoom,gui,brew install --cask zoom,brew,zoom,https://www.zoom.us/
 Kap,gui,brew install --cask kap,brew,kap,https://getkap.co/
 Openvpn-connect,gui,brew install --cask openvpn-connect,brew,openvpn-connect,https://openvpn.net/client-connect-vpn-for-mac-os/
 Firefox,gui,brew install --cask firefox,brew,firefox,https://www.mozilla.org/firefox/
-Rectangle,gui,brew install --cask rectangle,brew,rectangle,https://rectangleapp.com/
 Chrome,gui,brew install --cask google-chrome,brew,google-chrome,https://www.google.com/chrome/
 WezTerm,gui,brew install --cask wezterm,brew,wezterm,https://wezterm.org/
 Zsh,cli,brew install zsh,brew,zsh,https://zsh.sourceforge.io/Guide/zshguide01.html#l1

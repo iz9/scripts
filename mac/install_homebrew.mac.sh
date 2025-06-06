@@ -8,11 +8,11 @@ install_homebrew() {
     if ! command_exists brew; then
         log "Installing Homebrew..."
 
-        # Добавляем Homebrew в PATH для текущей сессии
+        # add Homebrew into PATH for current settion
         export PATH="/opt/homebrew/bin:$PATH"
         # Install brew
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        # Настраиваем Homebrew для текущего пользователя
+        # configure Homebrew for current user
         echo >> "$HOME/.zprofile"
         echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
         eval "$(/opt/homebrew/bin/brew shellenv)"
