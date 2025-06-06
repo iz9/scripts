@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # One-liner to run this:
-# curl -s https://raw.githubusercontent.com/iz9/scripts/master/install.macos.sh | bash
+# curl -fsSL https://raw.githubusercontent.com/iz9/scripts/refs/heads/master/install.macos.sh | zsh
 
 # Create temporary directory
 TEMP_DIR="$HOME/tmpinstall"
@@ -29,7 +29,3 @@ chmod -R +x "$TEMP_DIR"
 # Run the main installation script
 cd "$TEMP_DIR"
 ./install.mac.sh "$TEMP_DIR"
-
-# Cleanup
-#cd
-#rm -rf "$TEMP_DIR"
