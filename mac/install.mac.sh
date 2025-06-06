@@ -11,13 +11,19 @@ run_script_and_wait() {
     echo "Running ${script_path##*/}..."
     chmod +x "$script_path"
 
-    # For Homebrew installation, run in interactive mode
+    # For Homebrew installation, handle sudo separately
     if [[ "${script_path##*/}" == "install_homebrew.mac.sh" ]]; then
-        # Ensure sudo access first
+        # Get sudo credentials first and keep them alive
         sudo -v
 
-        # Run in interactive mode
-        /usr/bin/script -q /dev/null "$script_path"
+        # Keep sudo active in background
+        (while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null) &
+
+        # Run the script directly with current sudo session
+        sudo "$script_path"
+
+        # Kill the sudo keepalive
+        kill $! 2>/dev/null
     else
         # Execute script normally
         "$script_path"
