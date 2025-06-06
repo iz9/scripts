@@ -4,7 +4,7 @@
 # curl -s https://raw.githubusercontent.com/iz9/scripts/master/install.macos.sh | bash
 
 # Create temporary directory
-TEMP_DIR=$(mktemp -d)
+TEMP_DIR="$HOME/tmpinstall"
 REPO="iz9/scripts"
 BRANCH="master"
 DIR="mac"
