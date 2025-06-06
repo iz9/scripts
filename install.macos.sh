@@ -10,7 +10,9 @@ BRANCH="master"
 DIR="mac"
 
 echo "Creating temporary directory: $TEMP_DIR"
+sleep 10
 mkdir "$TEMP_DIR"
+sleep 10
 
 # Download and extract repository directory (macOS compatible)
 curl -L "https://api.github.com/repos/$REPO/tarball/$BRANCH" | \
