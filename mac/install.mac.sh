@@ -11,8 +11,18 @@ run_script_and_wait() {
     echo "Running ${script_path##*/}..."
     chmod +x "$script_path"
 
-    # Execute script and store exit status
-    "$script_path"
+    # For Homebrew installation, run in interactive mode
+    if [[ "${script_path##*/}" == "install_homebrew.mac.sh" ]]; then
+        # Ensure sudo access first
+        sudo -v
+
+        # Run in interactive mode
+        /usr/bin/script -q /dev/null "$script_path"
+    else
+        # Execute script normally
+        "$script_path"
+    fi
+
     local exit_status=$?
 
     if [ $exit_status -eq 0 ]; then
