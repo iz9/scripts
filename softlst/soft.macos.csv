@@ -1,0 +1,60 @@
+Name,"Type (cli, gui)",Installation,"Source (brew, appstore)",Package ID,Docs
+Jetbrains toolbox,gui,https://www.jetbrains.com/toolbox-app/,url,,
+Homebrew,cli,"/bin/bash -c ""$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)""",url,,https://brew.sh/
+Amphetamine,gui,manual,appstore,937984704,
+Xcode,gui,manual,appstore,497799835,
+dev scripts,cli,brew install openssl libyaml libffi readline zlib xz; xcode-select --install;,,,
+DevCleaner,gui,manual,appstore,1388020431,
+Copy clip,gui,manual,appstore,595191960,
+Slack,gui,brew install --cask slack,brew,slack,https://docs.slack.dev/
+Tick-tick,gui,brew install --cask ticktick,brew,ticktick,https://help.ticktick.com/
+Telegram,gui,brew install --cask telegram,brew,telegram,https://core.telegram.org/api
+Spark,gui,brew install --cask readdle-spark,brew,readdle-spark,https://sparkmailapp.com/features
+Commander One,gui,brew install --cask commander-one,brew,commander-one,https://mac.eltima.com/sitemap/#file-management
+Rosetta2,cli,softwareupdate --install-rosetta,appstore,,
+Obsidian,gui,brew install --cask obsidian,brew,obsidian,https://obsidian.md/
+Figma,gui,brew install --cask figma,brew,figma,https://www.figma.com/
+Zoom,gui,brew install --cask zoom,brew,zoom,https://www.zoom.us/
+Kap,gui,brew install --cask kap,brew,kap,https://getkap.co/
+Openvpn-connect,gui,brew install --cask openvpn-connect,brew,openvpn-connect,https://openvpn.net/client-connect-vpn-for-mac-os/
+Firefox,gui,brew install --cask firefox,brew,firefox,https://www.mozilla.org/firefox/
+Rectangle,gui,brew install --cask rectangle,brew,rectangle,https://rectangleapp.com/
+Chrome,gui,brew install --cask google-chrome,brew,google-chrome,https://www.google.com/chrome/
+WezTerm,gui,brew install --cask wezterm,brew,wezterm,https://wezterm.org/
+Zsh,cli,brew install zsh,brew,zsh,https://zsh.sourceforge.io/Guide/zshguide01.html#l1
+Oh My Zsh,cli,"sh -c ""$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)""",url,,https://github.com/ohmyzsh/ohmyzsh/wiki
+Starship,cli,brew install starship,brew,starship,https://starship.rs/guide/
+Nerd Font,font,brew install --cask font-fira-code-nerd-font,brew,font-fira-code-nerd-font,https://github.com/ryanoasis/nerd-fonts
+git,cli,brew install git,brew,git,https://git-scm.com/
+fzf,cli,brew install fzf,brew,fzf,https://github.com/junegunn/fzf
+ripgrep,cli,brew install ripgrep,brew,ripgrep,https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md
+bat,cli,brew install bat,brew,bat,https://github.com/sharkdp/bat
+eza,cli,brew install eza,brew,eza,https://github.com/eza-community/eza
+btop,cli,brew install btop,brew,btop,https://github.com/aristocratos/btop
+navi,cli,brew install navi,brew,navi,https://github.com/denisidoro/navi
+neovim,cli,brew install neovim,brew,neovim,https://neovim.io/
+zoxide,cli,brew install zoxide,brew,zoxide,https://https://github.com/ajeetdsouza/zoxide.com/rupa/z
+asdf,cli,brew install asdf,brew,asdf,https://asdf-vm.com/
+node,engine,brew install gpg gawk; asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git; asdf install nodejs latest,asdf,,
+python,engine,"asdf plugin-add python; asdf install python 3.13.3; asdf global python latest;
+",asdf,,
+ruby,engine,"asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git
+asdf install ruby 3.1.3
+asdf global ruby 3.1.3
+asdf shell ruby 3.1.3",asdf,,
+rust,engine,asdf plugin add rust https://github.com/code-lever/asdf-rust.git; asdf install rust latest; asdf global rust latest;,asdf,,
+go,engine,asdf plugin add golang https://github.com/kennyp/asdf-golang.git; asdf install golang latest; asdf global golang latest,asdf,,
+curl,cli,brew install curl,brew,curl,https://curl.se/
+wget,cli,brew install wget,brew,wget,https://www.gnu.org/software/wget/
+dotbot,cli,brew install dotbot,brew,dotbot,https://github.com/anishathalye/dotbot
+duf,cli,brew install duf,brew,duf,https://github.com/muesli/duf
+doggo,cli,brew install doggo,brew,doggo,https://doggo.mrkaran.dev/
+Clean My Mac,gui,manual,appstore,1339170533,
+fd,cli,brew install fd,brew,fd,https://github.com/sharkdp/fd
+jq,cli,brew install jq,brew,jq,https://jqlang.github.io/jq/
+tlrc,cli,brew install tlrc,brew,tlrc,https://tldr.sh/tlrc/
+7zip,cli,brew install sevenzip,brew,sevenzip,https://7-zip.org/
+tree,cli,brew install tree,brew,tree,https://oldmanprogrammer.net/source.php?dir=projects/tree
+ncdu,cli,brew install ncdu,brew,ncdu,https://dev.yorhel.nl/ncdu
+httpie,cli,brew install httpie,brew,httpie,https://httpie.io/
+htop,cli,brew install htop,brew,htop,https://htop.dev/

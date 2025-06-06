@@ -1,0 +1,151 @@
+### Operating System Files ###
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+
+### IDE and Editor Files ###
+# VS Code
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+### Programming Languages ###
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+venv/
+ENV/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+target/
+.mvn/
+
+# C/C++
+*.o
+*.ko
+*.obj
+*.elf
+*.exe
+*.dll
+*.so
+*.dylib
+
+### Build and Dependencies ###
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage/
+
+# Compiled binary addons
+build/Release
+
+# Dependency directories
+jspm_packages/
+
+# Optional cache directories
+.npm
+.eslintcache
+.stylelintcache
+
+### Misc ###
+# Temporary files
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+
+# Local environment files
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Debug files
+debug/
+
+# Archive files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Documentation
+/doc/
+/docs/
+
+# Cache directories
+.cache/
