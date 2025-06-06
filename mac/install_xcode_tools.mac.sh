@@ -2,7 +2,7 @@
 
 # Import utility functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/utils.ios.sh"
+source "${SCRIPT_DIR}/utils.mac.sh"
 
 install_xcode_tools() {
     if ! command_exists xcode-select; then

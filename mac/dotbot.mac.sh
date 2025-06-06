@@ -2,7 +2,7 @@
 
 # Import utility functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/utils.ios.sh"
+source "${SCRIPT_DIR}/utils.mac.sh"
 
 DOTFILES_DIR="$HOME/.dotfiles"
 DOTFILES_REPO="git@github.com:iz9/dotfiles-mac.git" # Замените на URL вашего репозитория
