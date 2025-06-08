@@ -1,0 +1,48 @@
+Name,"Type (cli, gui)",Installation,"Source (apt, snap, flatpak, url)",Package ID,Docs
+JetBrains Toolbox,gui,wget -cO jetbrains-toolbox.tar.gz "https://download.jetbrains.com/toolbox/jetbrains-toolbox-1.28.1.15219.tar.gz" && tar -xzf jetbrains-toolbox.tar.gz && ./jetbrains-toolbox-*/jetbrains-toolbox,url,,
+apt (Package Manager),cli,Already installed by default,system,,https://wiki.debian.org/Apt
+Snap,cli,sudo apt install snapd,apt,snapd,https://snapcraft.io/docs
+Flatpak,cli,sudo apt install flatpak,apt,flatpak,https://flatpak.org/
+dev scripts,cli,sudo apt install build-essential libssl-dev libyaml-dev libffi-dev libreadline-dev zlib1g-dev,apt,,
+Slack,gui,sudo snap install slack --classic,snap,slack,https://docs.slack.dev/
+Telegram,gui,sudo snap install telegram-desktop,snap,telegram-desktop,https://core.telegram.org/api
+Obsidian,gui,flatpak install flathub md.obsidian.Obsidian,flatpak,md.obsidian.Obsidian,https://obsidian.md/
+Figma,gui,flatpak install flathub io.github.Figma_Linux.figma_linux,flatpak,io.github.Figma_Linux.figma_linux,https://www.figma.com/
+Zoom,gui,sudo snap install zoom-client,snap,zoom-client,https://www.zoom.us/
+Firefox,gui,sudo apt install firefox,apt,firefox,https://www.mozilla.org/firefox/
+Chrome,gui,"wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && sudo apt install ./google-chrome-stable_current_amd64.deb",url,,https://www.google.com/chrome/
+WezTerm,gui,"curl -LO https://github.com/wez/wezterm/releases/download/nightly/wezterm-nightly.Ubuntu22.04.deb && sudo apt install ./wezterm-nightly.Ubuntu22.04.deb",url,,https://wezterm.org/
+Zsh,cli,sudo apt install zsh,apt,zsh,https://zsh.sourceforge.io/Guide/zshguide01.html#l1
+Oh My Zsh,cli,"sh -c ""$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)""",url,,https://github.com/ohmyzsh/ohmyzsh/wiki
+Starship,cli,"curl -sS https://starship.rs/install.sh | sh",url,,https://starship.rs/guide/
+Nerd Font,font,"mkdir -p ~/.local/share/fonts && cd ~/.local/share/fonts && curl -fLo ""Fira Code Regular Nerd Font Complete.ttf"" https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/FiraCode/Regular/complete/Fira%20Code%20Regular%20Nerd%20Font%20Complete.ttf",url,,https://github.com/ryanoasis/nerd-fonts
+git,cli,sudo apt install git,apt,git,https://git-scm.com/
+fzf,cli,sudo apt install fzf,apt,fzf,https://github.com/junegunn/fzf
+ripgrep,cli,sudo apt install ripgrep,apt,ripgrep,https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md
+bat,cli,sudo apt install bat,apt,bat,https://github.com/sharkdp/bat
+eza,cli,"sudo apt install -y gpg && sudo mkdir -p /etc/apt/keyrings && wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg && echo ""deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main"" | sudo tee /etc/apt/sources.list.d/gierens.list && sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list && sudo apt update && sudo apt install -y eza",apt,eza,https://github.com/eza-community/eza
+btop,cli,sudo apt install btop,apt,btop,https://github.com/aristocratos/btop
+navi,cli,"bash <(curl -sL https://raw.githubusercontent.com/denisidoro/navi/master/scripts/install)",url,,https://github.com/denisidoro/navi
+neovim,cli,sudo apt install neovim,apt,neovim,https://neovim.io/
+zoxide,cli,sudo apt install zoxide,apt,zoxide,https://github.com/ajeetdsouza/zoxide
+asdf,cli,"git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.11.3 && echo '. ""$HOME/.asdf/asdf.sh""' >> ~/.bashrc && echo '. ""$HOME/.asdf/completions/asdf.bash""' >> ~/.bashrc",url,,https://asdf-vm.com/
+node,engine,"asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git && asdf install nodejs latest && asdf global nodejs latest",asdf,,
+python,engine,"asdf plugin-add python && asdf install python 3.13.3 && asdf global python latest",asdf,,
+ruby,engine,"asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git && asdf install ruby 3.1.3 && asdf global ruby 3.1.3",asdf,,
+rust,engine,"asdf plugin add rust https://github.com/code-lever/asdf-rust.git && asdf install rust latest && asdf global rust latest",asdf,,
+go,engine,"asdf plugin add golang https://github.com/kennyp/asdf-golang.git && asdf install golang latest && asdf global golang latest",asdf,,
+curl,cli,sudo apt install curl,apt,curl,https://curl.se/
+wget,cli,sudo apt install wget,apt,wget,https://www.gnu.org/software/wget/
+dotbot,cli,"pip install dotbot",pip,dotbot,https://github.com/anishathalye/dotbot
+duf,cli,sudo apt install duf,apt,duf,https://github.com/muesli/duf
+doggo,cli,"wget https://github.com/mr-karan/doggo/releases/download/v0.5.5/doggo_0.5.5_linux_amd64.deb && sudo apt install ./doggo_0.5.5_linux_amd64.deb",url,,https://doggo.mrkaran.dev/
+Stacer,gui,sudo apt install stacer,apt,stacer,https://github.com/oguzhaninan/Stacer
+fd,cli,sudo apt install fd-find,apt,fd-find,https://github.com/sharkdp/fd
+jq,cli,sudo apt install jq,apt,jq,https://jqlang.github.io/jq/
+tldr,cli,sudo apt install tldr,apt,tldr,https://tldr.sh/
+7zip,cli,sudo apt install p7zip-full,apt,p7zip-full,https://7-zip.org/
+tree,cli,sudo apt install tree,apt,tree,https://oldmanprogrammer.net/source.php?dir=projects/tree
+ncdu,cli,sudo apt install ncdu,apt,ncdu,https://dev.yorhel.nl/ncdu
+httpie,cli,sudo apt install httpie,apt,httpie,https://httpie.io/
+htop,cli,sudo apt install htop,apt,htop,https://htop.dev/
+AnyDesk,gui,"wget -qO - https://keys.anydesk.com/repos/DEB-GPG-KEY | sudo apt-key add - && echo ""deb http://deb.anydesk.com/ all main"" | sudo tee /etc/apt/sources.list.d/anydesk-stable.list && sudo apt update && sudo apt install anydesk",apt,anydesk,https://anydesk.com/

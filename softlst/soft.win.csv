@@ -1,0 +1,51 @@
+Name,"Type (cli, gui)",Installation,"Source (winget, choco, scoop, url)",Package ID,Docs
+Winget,cli,"Already installed on Windows 10 (May 2020 update) and later. For older versions: https://github.com/microsoft/winget-cli/releases",system,,https://learn.microsoft.com/en-us/windows/package-manager/winget/
+Chocolatey,cli,"Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))",url,,https://docs.chocolatey.org/
+Scoop,cli,"Set-ExecutionPolicy RemoteSigned -Scope CurrentUser; irm get.scoop.sh | iex",url,,https://scoop.sh/
+JetBrains Toolbox,gui,winget install JetBrains.Toolbox,winget,JetBrains.Toolbox,https://www.jetbrains.com/toolbox-app/
+dev scripts,cli,"winget install Microsoft.VisualStudio.2022.BuildTools",winget,Microsoft.VisualStudio.2022.BuildTools,
+Slack,gui,winget install SlackTechnologies.Slack,winget,SlackTechnologies.Slack,https://docs.slack.dev/
+Telegram,gui,winget install Telegram.TelegramDesktop,winget,Telegram.TelegramDesktop,https://core.telegram.org/api
+Obsidian,gui,winget install Obsidian.Obsidian,winget,Obsidian.Obsidian,https://obsidian.md/
+Figma,gui,winget install Figma.Figma,winget,Figma.Figma,https://www.figma.com/
+Zoom,gui,winget install Zoom.Zoom,winget,Zoom.Zoom,https://www.zoom.us/
+Firefox,gui,winget install Mozilla.Firefox,winget,Mozilla.Firefox,https://www.mozilla.org/firefox/
+Chrome,gui,winget install Google.Chrome,winget,Google.Chrome,https://www.google.com/chrome/
+WezTerm,gui,winget install wez.wezterm,winget,wez.wezterm,https://wezterm.org/
+PowerShell Core,cli,winget install Microsoft.PowerShell,winget,Microsoft.PowerShell,https://learn.microsoft.com/en-us/powershell/
+Windows Terminal,gui,winget install Microsoft.WindowsTerminal,winget,Microsoft.WindowsTerminal,https://learn.microsoft.com/en-us/windows/terminal/
+Oh My Posh,cli,"winget install JanDeDobbeleer.OhMyPosh -s winget",winget,JanDeDobbeleer.OhMyPosh,https://ohmyposh.dev/
+Nerd Font,font,"oh-my-posh font install FiraCode",oh-my-posh,,https://github.com/ryanoasis/nerd-fonts
+git,cli,winget install Git.Git,winget,Git.Git,https://git-scm.com/
+fzf,cli,winget install junegunn.fzf,winget,junegunn.fzf,https://github.com/junegunn/fzf
+ripgrep,cli,winget install BurntSushi.ripgrep.MSVC,winget,BurntSushi.ripgrep.MSVC,https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md
+bat,cli,winget install sharkdp.bat,winget,sharkdp.bat,https://github.com/sharkdp/bat
+btop,cli,scoop install btop,scoop,btop,https://github.com/aristocratos/btop
+neovim,cli,winget install Neovim.Neovim,winget,Neovim.Neovim,https://neovim.io/
+zoxide,cli,winget install ajeetdsouza.zoxide,winget,ajeetdsouza.zoxide,https://github.com/ajeetdsouza/zoxide
+node,engine,"winget install OpenJS.NodeJS.LTS",winget,OpenJS.NodeJS.LTS,https://nodejs.org/
+python,engine,"winget install Python.Python.3.11",winget,Python.Python.3.11,https://www.python.org/
+ruby,engine,"winget install RubyInstallerTeam.Ruby",winget,RubyInstallerTeam.Ruby,https://www.ruby-lang.org/
+rust,engine,"winget install Rustlang.Rust.MSVC",winget,Rustlang.Rust.MSVC,https://www.rust-lang.org/
+go,engine,"winget install GoLang.Go",winget,GoLang.Go,https://go.dev/
+curl,cli,"winget install cURL.cURL",winget,cURL.cURL,https://curl.se/
+wget,cli,"winget install GnuWin32.Wget",winget,GnuWin32.Wget,https://www.gnu.org/software/wget/
+fd,cli,"winget install sharkdp.fd",winget,sharkdp.fd,https://github.com/sharkdp/fd
+jq,cli,"winget install stedolan.jq",winget,stedolan.jq,https://jqlang.github.io/jq/
+7zip,cli,"winget install 7zip.7zip",winget,7zip.7zip,https://7-zip.org/
+tree,cli,"Already included in Windows (use 'tree' command)",system,,
+httpie,cli,"pip install httpie",pip,httpie,https://httpie.io/
+htop,cli,"scoop install htop",scoop,htop,https://htop.dev/
+AnyDesk,gui,"winget install AnyDeskSoftwareGmbH.AnyDesk",winget,AnyDeskSoftwareGmbH.AnyDesk,https://anydesk.com/
+Visual Studio Code,gui,"winget install Microsoft.VisualStudioCode",winget,Microsoft.VisualStudioCode,https://code.visualstudio.com/
+Notepad++,gui,"winget install Notepad++.Notepad++",winget,Notepad++.Notepad++,https://notepad-plus-plus.org/
+PowerToys,gui,"winget install Microsoft.PowerToys",winget,Microsoft.PowerToys,https://learn.microsoft.com/en-us/windows/powertoys/
+WinSCP,gui,"winget install WinSCP.WinSCP",winget,WinSCP.WinSCP,https://winscp.net/
+PuTTY,gui,"winget install PuTTY.PuTTY",winget,PuTTY.PuTTY,https://www.putty.org/
+VLC,gui,"winget install VideoLAN.VLC",winget,VideoLAN.VLC,https://www.videolan.org/vlc/
+ShareX,gui,"winget install ShareX.ShareX",winget,ShareX.ShareX,https://getsharex.com/
+Rufus,gui,"winget install Rufus.Rufus",winget,Rufus.Rufus,https://rufus.ie/
+WinDirStat,gui,"winget install WinDirStat.WinDirStat",winget,WinDirStat.WinDirStat,https://windirstat.net/
+Sysinternals Suite,cli,"winget install Microsoft.Sysinternals.SysinternalsSuite",winget,Microsoft.Sysinternals.SysinternalsSuite,https://learn.microsoft.com/en-us/sysinternals/
+Docker Desktop,gui,"winget install Docker.DockerDesktop",winget,Docker.DockerDesktop,https://www.docker.com/products/docker-desktop/
+WSL,cli,"wsl --install",system,,https://learn.microsoft.com/en-us/windows/wsl/
