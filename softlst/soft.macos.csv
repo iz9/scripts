@@ -57,3 +57,4 @@ tree,cli,brew install tree,brew,tree,https://oldmanprogrammer.net/source.php?dir
 ncdu,cli,brew install ncdu,brew,ncdu,https://dev.yorhel.nl/ncdu
 httpie,cli,brew install httpie,brew,httpie,https://httpie.io/
 htop,cli,brew install htop,brew,htop,https://htop.dev/
+anydesk,gui,brew install anydesk,brew,anydesk,https://anydesk.com/
