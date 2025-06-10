@@ -4,6 +4,29 @@
 Write-Host "=== Windows Software Installation and Configuration ===" -ForegroundColor Cyan
 Write-Host ""
 
+# -------------------- Scoop Installation Prompt --------------------
+Write-Host "⚠️  IMPORTANT: Scoop Installation Required" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "Before running this script, you need to install Scoop (NOT as administrator)." -ForegroundColor Cyan
+Write-Host "Please open a regular PowerShell window (not as admin) and run:" -ForegroundColor White
+Write-Host ""
+Write-Host "    irm get.scoop.sh | iex" -ForegroundColor Green
+Write-Host ""
+Write-Host "After Scoop is installed, come back and run this script as administrator." -ForegroundColor Cyan
+Write-Host ""
+
+$scoopInstalled = Get-Command scoop -ErrorAction SilentlyContinue
+if (-not $scoopInstalled) {
+    $continue = Read-Host "Scoop is not detected. Do you want to continue anyway? (y/N)"
+    if ($continue -ne 'y' -and $continue -ne 'Y') {
+        Write-Host "Please install Scoop first, then run this script again." -ForegroundColor Yellow
+        exit 1
+    }
+} else {
+    Write-Host "✅ Scoop is already installed!" -ForegroundColor Green
+    Write-Host ""
+}
+
 # -------------------- Install Chocolatey --------------------
 function Install-Chocolatey {
     Write-Host "Step 1: Installing Chocolatey..." -ForegroundColor Yellow
@@ -24,44 +47,40 @@ function Install-Chocolatey {
     Write-Host "Chocolatey installed successfully!" -ForegroundColor Green
 }
 
-# -------------------- Install Scoop --------------------
-function Install-Scoop {
-    Write-Host "`nStep 2: Installing Scoop..." -ForegroundColor Yellow
+# -------------------- Configure Scoop --------------------
+function Configure-Scoop {
+    Write-Host "`nStep 2: Configuring Scoop buckets..." -ForegroundColor Yellow
 
-    if (Get-Command scoop -ErrorAction SilentlyContinue) {
-        Write-Host "Scoop is already installed." -ForegroundColor Green
+    if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+        Write-Warning "Scoop is not available, skipping Scoop configuration"
         return
     }
 
-    Write-Host "Installing Scoop package manager..." -ForegroundColor Cyan
+    Write-Host "Adding useful Scoop buckets..." -ForegroundColor Cyan
 
-    # Set execution policy for current user if needed
-    $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
-    if ($currentPolicy -eq 'Restricted') {
-        Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-        Write-Host "Execution policy set to RemoteSigned for current user." -ForegroundColor Gray
-    }
-
-    # Install Scoop
+    # Add buckets with error handling
     try {
-        iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
-
-        # Refresh environment variables
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-
-        Write-Host "Scoop installed successfully!" -ForegroundColor Green
-
-        # Add useful buckets
-        Write-Host "Adding useful Scoop buckets..." -ForegroundColor Cyan
         scoop bucket add extras
-        scoop bucket add versions
-        scoop bucket add nerd-fonts
-
-        Write-Host "Scoop buckets added: extras, versions, nerd-fonts" -ForegroundColor Green
-
+        Write-Host "✅ Added 'extras' bucket" -ForegroundColor Green
     } catch {
-        Write-Warning "Scoop installation encountered an issue: $_"
+        Write-Warning "Failed to add 'extras' bucket: $_"
     }
+
+    try {
+        scoop bucket add versions
+        Write-Host "✅ Added 'versions' bucket" -ForegroundColor Green
+    } catch {
+        Write-Warning "Failed to add 'versions' bucket: $_"
+    }
+
+    try {
+        scoop bucket add nerd-fonts
+        Write-Host "✅ Added 'nerd-fonts' bucket" -ForegroundColor Green
+    } catch {
+        Write-Warning "Failed to add 'nerd-fonts' bucket: $_"
+    }
+
+    Write-Host "Scoop buckets configuration completed!" -ForegroundColor Green
 }
 
 # -------------------- Install Fonts --------------------
@@ -1034,8 +1053,8 @@ try {
     # Step 1: Install Chocolatey
     Install-Chocolatey
 
-    # Step 2: Install Scoop
-    Install-Scoop
+    # Step 2: Configure Scoop (buckets)
+    Configure-Scoop
 
     # Step 3: Install Fonts
     Install-Fonts
