@@ -149,7 +149,7 @@ function Install-ChocolateyTools {
         "ncdu",
         "httpie",
         "duf",
-        "llvm"
+        "visualstudio2022buildtools"
     )
 
     foreach ($tool in $chocoTools) {
