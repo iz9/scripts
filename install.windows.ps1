@@ -631,6 +631,15 @@ function mkcd {
     }
 }
 
+# Remove file or directory recursivelly
+function rm {
+    param (
+        [Parameter(Mandatory = $true, ValueFromRemainingArguments = $true)]
+        [string[]] $Paths
+    )
+    Remove-Item -Path $Paths -Recurse -Force
+}
+
 # Extract various archive types
 function extract {
     param([string]`$File)
