@@ -448,6 +448,7 @@ function Configure-CLITools {
 }
 
 # -------------------- Configure Starship --------------------
+# -------------------- Configure Starship --------------------
 function Configure-Starship {
     Write-Host "Configuring Starship prompt..." -ForegroundColor Cyan
 
@@ -482,9 +483,9 @@ truncate_to_repo = true
 truncation_length = 3
 
 [character]
-success_symbol = "[❯](purple)"
-error_symbol = "[❯](red)"
-vimcmd_symbol = "[❮](green)"
+success_symbol = "[>](purple)"
+error_symbol = "[>](red)"
+vimcmd_symbol = "[<](green)"
 
 [git_branch]
 format = "[`$branch](`$style)"
@@ -493,13 +494,13 @@ style = "bright-black"
 [git_status]
 format = "[[(*`$conflicted`$untracked`$modified`$staged`$renamed`$deleted)](218) (`$ahead_behind`$stashed)](`$style)"
 style = "cyan"
-conflicted = "​"
-untracked = "​"
-modified = "​"
-staged = "​"
-renamed = "​"
-deleted = "​"
-stashed = "≡"
+conflicted = "!"
+untracked = "?"
+modified = "M"
+staged = "+"
+renamed = "R"
+deleted = "D"
+stashed = "="
 
 [git_state]
 format = '\([`$state( `$progress_current/`$progress_total)](`$style)\) '
@@ -511,20 +512,19 @@ style = "yellow"
 
 [python]
 format = '[`${symbol}`${pyenv_prefix}(`${version} )(\(`$virtualenv\) )](`$style)'
-symbol = "🐍 "
+symbol = "Py "
 style = "yellow bold"
 
 [nodejs]
 format = '[`${symbol}(`${version} )](`$style)'
-symbol = "⬢ "
+symbol = "Node "
 style = "green bold"
 "@
 
     $starshipConfig | Out-File -FilePath $starshipConfigPath -Encoding UTF8
     Write-Host "Starship config created at: $starshipConfigPath" -ForegroundColor Green
+    Write-Host "Note: Using Windows-compatible symbols for better display" -ForegroundColor Cyan
 }
-
-# -------------------- Configure PowerShell Profile --------------------
 
 # -------------------- Configure PowerShell Profile --------------------
 function Configure-PowerShellProfile {
