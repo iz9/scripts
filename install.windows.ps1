@@ -776,7 +776,7 @@ Write-Host "CLI tools configuration loaded!" -ForegroundColor Green
     Write-Host "To activate aliases in new PowerShell sessions:" -ForegroundColor Yellow
     Write-Host "  - Restart PowerShell, or" -ForegroundColor White
     Write-Host "  - Run: . `$PROFILE" -ForegroundColor White
-}}
+}
 
 # -------------------- Create Global .gitignore --------------------
 function Create-GlobalGitignore {
