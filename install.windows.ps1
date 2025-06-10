@@ -1141,28 +1141,7 @@ try {
     # Step 3: Install Git
     Install-Git
 
-    # Step 4: Configure Scoop (buckets)
-    Configure-Scoop
-
-    # Step 5: Install Fonts
-    Install-Fonts
-
-    # Step 6: Install Essential Applications
-    Install-EssentialApplications
-
-    # Step 7: Install CLI tools via Chocolatey
-    Install-ChocolateyTools
-
-    # Step 8: Install CLI tools via Scoop
-    Install-ScoopTools
-
-    # Step 9: Install WezTerm
-    Install-WezTerm
-
-    # Step 10: Install Starship
-    Install-Starship
-
-    # Step 11: Configure Git
+    # Step 4: Configure Git
     Write-Host "`nStep 11: Configuring Git..." -ForegroundColor Yellow
 
     Create-GlobalGitignore
@@ -1170,6 +1149,27 @@ try {
     Set-GitConfig
     $email = Ensure-UserIdentity
     Ensure-SshKey -Email $email
+
+    # Step 5: Configure Scoop (buckets)
+    Configure-Scoop
+
+    # Step 6: Install Fonts
+    Install-Fonts
+
+    # Step 7: Install Essential Applications
+    Install-EssentialApplications
+
+    # Step 8: Install CLI tools via Chocolatey
+    Install-ChocolateyTools
+
+    # Step 9: Install CLI tools via Scoop
+    Install-ScoopTools
+
+    # Step 10: Install WezTerm
+    Install-WezTerm
+
+    # Step 11: Install Starship
+    Install-Starship
 
     # Step 12: Configure CLI Tools, WezTerm, and Starship
     Write-Host "`nStep 12: Configuring CLI tools, WezTerm, and Starship..." -ForegroundColor Yellow
