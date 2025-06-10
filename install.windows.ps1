@@ -448,7 +448,6 @@ function Configure-CLITools {
 }
 
 # -------------------- Configure Starship --------------------
-# -------------------- Configure Starship --------------------
 function Configure-Starship {
     Write-Host "Configuring Starship prompt..." -ForegroundColor Cyan
 
@@ -1130,6 +1129,322 @@ function Ensure-SshKey {
     ssh -T git@github.com
 }
 
+
+# -------------------- Install and Configure Neovim --------------------
+function Install-AndConfigure-Neovim {
+    Write-Host "`nStep 11: Installing and configuring Neovim..." -ForegroundColor Yellow
+
+    # Install Neovim via Chocolatey
+    Write-Host "Installing Neovim..." -ForegroundColor Cyan
+    choco install neovim -y
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Neovim installation may have encountered issues."
+        return
+    }
+
+    Write-Host "Neovim installed successfully!" -ForegroundColor Green
+
+    # Refresh environment variables
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+    # Verify dependencies are installed (these should be from earlier steps)
+    $dependencies = @("rg", "fd", "fzf")
+    foreach ($dep in $dependencies) {
+        if (-not (Get-Command $dep -ErrorAction SilentlyContinue)) {
+            Write-Warning "$dep is not available - some Neovim features may not work properly"
+        }
+    }
+
+    # Create Neovim config directory
+    Write-Host "Setting up Neovim configuration..." -ForegroundColor Cyan
+    $nvimConfigDir = Join-Path $env:LOCALAPPDATA "nvim"
+    if (-not (Test-Path $nvimConfigDir)) {
+        New-Item -ItemType Directory -Path $nvimConfigDir -Force | Out-Null
+    }
+
+    # Install lazy.nvim package manager
+    $lazyPath = Join-Path $env:LOCALAPPDATA "nvim-data\lazy\lazy.nvim"
+    if (-not (Test-Path $lazyPath)) {
+        Write-Host "Installing lazy.nvim package manager..." -ForegroundColor Cyan
+        $lazyDir = Split-Path $lazyPath -Parent
+        if (-not (Test-Path $lazyDir)) {
+            New-Item -ItemType Directory -Path $lazyDir -Force | Out-Null
+        }
+
+        try {
+            git clone --filter=blob:none https://github.com/folke/lazy.nvim.git --branch=stable $lazyPath
+            Write-Host "✅ lazy.nvim installed successfully!" -ForegroundColor Green
+        } catch {
+            Write-Warning "Failed to clone lazy.nvim: $_"
+            Write-Host "You may need to install it manually in Neovim" -ForegroundColor Yellow
+        }
+    }
+
+    # Create init.lua configuration
+    $initLuaPath = Join-Path $nvimConfigDir "init.lua"
+
+    $initLuaContent = @"
+-- Bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- Basic options
+vim.g.mapleader = " "  -- Set leader key to space
+vim.g.maplocalleader = " "
+
+-- Basic settings
+vim.opt.number = true         -- Show line numbers
+vim.opt.relativenumber = true -- Show relative line numbers
+vim.opt.mouse = 'a'          -- Enable mouse support
+vim.opt.ignorecase = true    -- Ignore case in search
+vim.opt.smartcase = true     -- But don't ignore it when search string contains uppercase letters
+vim.opt.hlsearch = false     -- Don't highlight all search results
+vim.opt.wrap = false         -- Don't wrap lines
+vim.opt.breakindent = true   -- Preserve indentation in wrapped text
+vim.opt.tabstop = 4          -- Tab width
+vim.opt.shiftwidth = 4       -- Indentation width
+vim.opt.expandtab = true     -- Use spaces instead of tabs
+vim.opt.termguicolors = true -- True color support
+
+-- System clipboard
+vim.opt.clipboard = 'unnamedplus'  -- Use system clipboard
+
+-- Russian keyboard mappings
+local russian_mappings = {
+    ['й'] = 'q', ['ц'] = 'w', ['у'] = 'e', ['к'] = 'r', ['е'] = 't',
+    ['н'] = 'y', ['г'] = 'u', ['ш'] = 'i', ['щ'] = 'o', ['з'] = 'p',
+    ['х'] = '[', ['ъ'] = ']', ['ф'] = 'a', ['ы'] = 's', ['в'] = 'd',
+    ['а'] = 'f', ['п'] = 'g', ['р'] = 'h', ['о'] = 'j', ['л'] = 'k',
+    ['д'] = 'l', ['ж'] = ';', ['э'] = "'", ['ё'] = '\\',['я'] = 'z',
+    ['ч'] = 'x', ['с'] = 'c', ['м'] = 'v', ['и'] = 'b', ['т'] = 'n',
+    ['ь'] = 'm', ['б'] = ',', ['ю'] = '.',
+    ['Й'] = 'Q', ['Ц'] = 'W', ['У'] = 'E', ['К'] = 'R', ['Е'] = 'T',
+    ['Н'] = 'Y', ['Г'] = 'U', ['Ш'] = 'I', ['Щ'] = 'O', ['З'] = 'P',
+    ['Х'] = '{', ['Ъ'] = '}', ['Ф'] = 'A', ['Ы'] = 'S', ['В'] = 'D',
+    ['А'] = 'F', ['П'] = 'G', ['Р'] = 'H', ['О'] = 'J', ['Л'] = 'K',
+    ['Д'] = 'L', ['Ж'] = ':', ['Э'] = '"', ['Я'] = 'Z', ['Ч'] = 'X',
+    ['С'] = 'C', ['М'] = 'V', ['И'] = 'B', ['Т'] = 'N', ['Ь'] = 'M',
+    ['Б'] = '<', ['Ю'] = '>', ['Ё'] = '|'
+}
+
+for rus, eng in pairs(russian_mappings) do
+    vim.keymap.set({'n', 'v'}, rus, eng)
+end
+
+-- Basic keymaps
+vim.keymap.set('n', '<leader>w', '<cmd>write<cr>', { desc = 'Save' })
+vim.keymap.set('n', '<leader>q', '<cmd>quit<cr>', { desc = 'Quit' })
+vim.keymap.set('n', '<leader>h', '<cmd>nohlsearch<cr>', { desc = 'Clear search highlight' })
+
+-- Plugin specifications
+require("lazy").setup({
+    -- Color scheme
+    {
+        "folke/tokyonight.nvim",
+        lazy = false,
+        priority = 1000,
+        config = function()
+            vim.cmd([[colorscheme tokyonight-night]])
+        end,
+    },
+
+    -- File explorer
+    {
+        "nvim-neo-tree/neo-tree.nvim",
+        branch = "v3.x",
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+            "nvim-tree/nvim-web-devicons",
+            "MunifTanjim/nui.nvim",
+        },
+        keys = {
+            { "<leader>e", "<cmd>Neotree toggle<cr>", desc = "Toggle Explorer" },
+        },
+    },
+
+    -- Fuzzy finder
+    {
+        'nvim-telescope/telescope.nvim',
+        branch = '0.1.x',
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+            'nvim-tree/nvim-web-devicons',
+        },
+        keys = {
+            { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
+            { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
+            { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
+        },
+    },
+
+    -- Status line
+    {
+        'nvim-lualine/lualine.nvim',
+        dependencies = { 'nvim-tree/nvim-web-devicons' },
+        config = true,
+    },
+
+    -- Better syntax highlighting
+    {
+        'nvim-treesitter/nvim-treesitter',
+        build = ':TSUpdate',
+        config = function()
+            require('nvim-treesitter.configs').setup({
+                ensure_installed = { "lua", "vim", "bash", "python", "javascript", "typescript", "rust", "powershell" },
+                auto_install = true,
+                highlight = { enable = true },
+                indent = { enable = true },
+            })
+        end,
+    },
+
+    -- LSP Support
+    {
+        'VonHeikemen/lsp-zero.nvim',
+        branch = 'v3.x',
+        dependencies = {
+            {'neovim/nvim-lspconfig'},
+            {'williamboman/mason.nvim'},
+            {'williamboman/mason-lspconfig.nvim'},
+            {'hrsh7th/nvim-cmp'},
+            {'hrsh7th/cmp-buffer'},
+            {'hrsh7th/cmp-path'},
+            {'saadparwaiz1/cmp_luasnip'},
+            {'hrsh7th/cmp-nvim-lsp'},
+            {'hrsh7th/cmp-nvim-lua'},
+            {'L3MON4D3/LuaSnip'},
+            {'rafamadriz/friendly-snippets'},
+        },
+        config = function()
+            local lsp_zero = require('lsp-zero')
+            lsp_zero.on_attach(function(client, bufnr)
+                lsp_zero.default_keymaps({buffer = bufnr})
+            end)
+
+            require('mason').setup({})
+            require('mason-lspconfig').setup({
+                ensure_installed = { 'lua_ls', 'rust_analyzer', 'pyright', 'powershell_es' },
+                handlers = {
+                    lsp_zero.default_setup,
+                },
+            })
+        end,
+    },
+
+    -- Git signs in the gutter
+    {
+        'lewis6991/gitsigns.nvim',
+        config = true,
+    },
+
+    -- copy text highlight
+    {
+        "machakann/vim-highlightedyank",
+        event = "VeryLazy",
+    },
+
+    -- code commentary
+    {
+        "numToStr/Comment.nvim",
+        event = "VeryLazy",
+        config = function()
+            require('Comment').setup()
+        end,
+        keys = {
+            { "gcc", mode = "n", desc = "Comment toggle current line" },
+            { "gc", mode = { "n", "v" }, desc = "Comment toggle linewise" },
+            { "gb", mode = { "n", "v" }, desc = "Comment toggle blockwise" },
+        },
+    },
+
+    -- enhanced navigation
+    {
+        "folke/flash.nvim",
+        event = "VeryLazy",
+        opts = {},
+        keys = {
+            { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+            { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+            { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+            { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+        },
+    },
+
+    -- fast string navigation
+    {
+        "jinh0/eyeliner.nvim",
+        event = "VeryLazy",
+        config = function()
+            require('eyeliner').setup({
+                highlight_on_key = true,
+                dim = true,
+            })
+        end,
+    },
+})
+
+-- yanked highlight
+vim.api.nvim_create_autocmd('TextYankPost', {
+    callback = function()
+        vim.highlight.on_yank({ timeout = 300 })
+    end,
+})
+"@
+
+    try {
+        $initLuaContent | Out-File -FilePath $initLuaPath -Encoding UTF8 -Force
+        Write-Host "✅ Neovim configuration created at: $initLuaPath" -ForegroundColor Green
+    } catch {
+        Write-Error "Failed to create Neovim configuration: $_"
+        return
+    }
+
+    # Add Neovim to PowerShell profile as default editor
+    if (Test-Path $PROFILE) {
+        $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+        if ($profileContent -and $profileContent -notmatch "EDITOR.*nvim") {
+            try {
+                "`n# Set Neovim as default editor" | Add-Content -Path $PROFILE -Encoding UTF8
+                "`$env:EDITOR = 'nvim'" | Add-Content -Path $PROFILE -Encoding UTF8
+                "`$env:VISUAL = 'nvim'" | Add-Content -Path $PROFILE -Encoding UTF8
+                Write-Host "Added Neovim as default editor to PowerShell profile" -ForegroundColor Green
+            } catch {
+                Write-Warning "Could not add Neovim to PowerShell profile: $_"
+            }
+        }
+    }
+
+    Write-Host ""
+    Write-Host "Neovim Setup Summary:" -ForegroundColor Cyan
+    Write-Host "  ✅ Neovim installed" -ForegroundColor Green
+    Write-Host "  ✅ Configuration created at: $nvimConfigDir" -ForegroundColor Green
+    Write-Host "  ✅ Package manager (lazy.nvim) installed" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Next steps:" -ForegroundColor Yellow
+    Write-Host "  1. Open Neovim by typing 'nvim'" -ForegroundColor White
+    Write-Host "  2. Run ':Lazy sync' to install all plugins" -ForegroundColor White
+    Write-Host "  3. Run ':checkhealth' to verify setup" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Key bindings:" -ForegroundColor Cyan
+    Write-Host "  <Space> = Leader key" -ForegroundColor White
+    Write-Host "  <Leader>e = Toggle file explorer" -ForegroundColor White
+    Write-Host "  <Leader>ff = Find files" -ForegroundColor White
+    Write-Host "  <Leader>fg = Live grep" -ForegroundColor White
+    Write-Host "  <Leader>w = Save file" -ForegroundColor White
+    Write-Host "  <Leader>q = Quit" -ForegroundColor White
+}
+
 # -------------------- Main execution --------------------
 try {
     # Step 1: Install Chocolatey
@@ -1177,6 +1492,10 @@ try {
     Configure-WezTerm
     Configure-Starship
     Configure-PowerShellProfile
+
+    # Step 13: Install and configure Neovim
+    Write-Host "`nStep 12: Install and configure neovim..." -ForegroundColor Yellow
+    Install-AndConfigure-Neovim
 
     Write-Host "`nAll done! Your system is now configured." -ForegroundColor Green
     Write-Host "Installed software:" -ForegroundColor Cyan
