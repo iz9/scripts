@@ -525,20 +525,34 @@ style = "green bold"
 }
 
 # -------------------- Configure PowerShell Profile --------------------
+
+# -------------------- Configure PowerShell Profile --------------------
 function Configure-PowerShellProfile {
     Write-Host "Configuring PowerShell profile..." -ForegroundColor Cyan
 
-    # Check if profile exists, create if not
+    # Ensure profile directory exists
+    $profileDir = Split-Path $PROFILE -Parent
+    if (-not (Test-Path $profileDir)) {
+        New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+        Write-Host "Created profile directory: $profileDir" -ForegroundColor Gray
+    }
+
+    # Create profile file if it doesn't exist
     if (-not (Test-Path $PROFILE)) {
-        $profileDir = Split-Path $PROFILE -Parent
-        if (-not (Test-Path $profileDir)) {
-            New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
-        }
         New-Item -ItemType File -Path $PROFILE -Force | Out-Null
+        Write-Host "Created profile file: $PROFILE" -ForegroundColor Gray
     }
 
     # Read existing profile content
-    $existingContent = if (Test-Path $PROFILE) { Get-Content $PROFILE -Raw } else { "" }
+    $existingContent = ""
+    if (Test-Path $PROFILE) {
+        try {
+            $existingContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+            if ($null -eq $existingContent) { $existingContent = "" }
+        } catch {
+            $existingContent = ""
+        }
+    }
 
     $profileConfig = @"
 
@@ -687,14 +701,82 @@ Write-Host "CLI tools configuration loaded!" -ForegroundColor Green
 
     # Check if our configuration is already in the profile
     if ($existingContent -notmatch "CLI Tools Configuration") {
-        Add-Content -Path $PROFILE -Value $profileConfig -Encoding UTF8
-        Write-Host "CLI tools configuration added to PowerShell profile: $PROFILE" -ForegroundColor Green
+        try {
+            # Force write the configuration using Out-File to ensure it's written
+            $profileConfig | Out-File -FilePath $PROFILE -Append -Encoding UTF8 -Force
+            Write-Host "✅ CLI tools configuration added to PowerShell profile: $PROFILE" -ForegroundColor Green
+
+            # Verify the content was written
+            $verifyContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+            if ($verifyContent -and $verifyContent.Contains("CLI Tools Configuration")) {
+                Write-Host "✅ Profile configuration verified successfully!" -ForegroundColor Green
+            } else {
+                Write-Warning "Profile may not have been written correctly. Attempting alternative method..."
+
+                # Alternative method using Add-Content
+                Add-Content -Path $PROFILE -Value $profileConfig -Encoding UTF8 -Force
+                Write-Host "✅ Used alternative method to write profile" -ForegroundColor Green
+            }
+
+        } catch {
+            Write-Warning "Error writing to profile: $_"
+            Write-Host "Attempting to write profile using alternative method..." -ForegroundColor Yellow
+
+            try {
+                # Fallback method
+                $profileConfig | Add-Content -Path $PROFILE -Encoding UTF8
+                Write-Host "✅ Profile written using fallback method" -ForegroundColor Green
+            } catch {
+                Write-Error "Failed to write PowerShell profile: $_"
+                Write-Host "Manual intervention required. Profile path: $PROFILE" -ForegroundColor Red
+                return
+            }
+        }
+
+        # Apply configuration to current session immediately
+        try {
+            Write-Host "Applying configuration to current session..." -ForegroundColor Cyan
+            . $PROFILE
+            Write-Host "✅ Configuration applied to current session!" -ForegroundColor Green
+        } catch {
+            Write-Warning "Could not apply configuration to current session: $_"
+            Write-Host "Please restart PowerShell or run '. `$PROFILE' manually" -ForegroundColor Yellow
+        }
+
     } else {
         Write-Host "CLI tools configuration already exists in PowerShell profile." -ForegroundColor Gray
+
+        # Still try to apply it to current session
+        try {
+            . $PROFILE
+            Write-Host "✅ Existing configuration applied to current session!" -ForegroundColor Green
+        } catch {
+            Write-Warning "Could not apply existing configuration: $_"
+        }
     }
 
-    Write-Host "Note: Restart PowerShell or run '. `$PROFILE' to apply changes." -ForegroundColor Yellow
-}
+    # Final verification
+    Write-Host ""
+    Write-Host "Profile Configuration Summary:" -ForegroundColor Cyan
+    Write-Host "  Profile Path: $PROFILE" -ForegroundColor White
+    Write-Host "  Profile Exists: $(Test-Path $PROFILE)" -ForegroundColor White
+
+    if (Test-Path $PROFILE) {
+        $profileSize = (Get-Item $PROFILE).Length
+        Write-Host "  Profile Size: $profileSize bytes" -ForegroundColor White
+
+        if ($profileSize -gt 0) {
+            Write-Host "  ✅ Profile appears to have content" -ForegroundColor Green
+        } else {
+            Write-Host "  ⚠️  Profile file is empty!" -ForegroundColor Yellow
+        }
+    }
+
+    Write-Host ""
+    Write-Host "To activate aliases in new PowerShell sessions:" -ForegroundColor Yellow
+    Write-Host "  - Restart PowerShell, or" -ForegroundColor White
+    Write-Host "  - Run: . `$PROFILE" -ForegroundColor White
+}}
 
 # -------------------- Create Global .gitignore --------------------
 function Create-GlobalGitignore {
