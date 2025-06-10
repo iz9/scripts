@@ -49,7 +49,7 @@ function Install-Chocolatey {
 
 # -------------------- Configure Scoop --------------------
 function Configure-Scoop {
-    Write-Host "`nStep 2: Configuring Scoop buckets..." -ForegroundColor Yellow
+    Write-Host "`nStep 5: Configuring Scoop buckets..." -ForegroundColor Yellow
 
     if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
         Write-Warning "Scoop is not available, skipping Scoop configuration"
@@ -85,7 +85,7 @@ function Configure-Scoop {
 
 # -------------------- Install Fonts --------------------
 function Install-Fonts {
-    Write-Host "`nStep 3: Installing fonts..." -ForegroundColor Yellow
+    Write-Host "`nStep 6: Installing fonts..." -ForegroundColor Yellow
 
     Write-Host "Installing JetBrains Mono Nerd Font..." -ForegroundColor Cyan
     choco install nerd-fonts-jetbrainsmono -y
@@ -99,7 +99,7 @@ function Install-Fonts {
 
 # -------------------- Install Essential Applications --------------------
 function Install-EssentialApplications {
-    Write-Host "`nStep 4: Installing essential applications..." -ForegroundColor Yellow
+    Write-Host "`nStep 7: Installing essential applications..." -ForegroundColor Yellow
 
     $essentialApps = @(
         "jetbrainstoolbox",
@@ -133,7 +133,7 @@ function Install-EssentialApplications {
 
 # -------------------- Install CLI Tools via Chocolatey --------------------
 function Install-ChocolateyTools {
-    Write-Host "`nStep 5: Installing CLI tools via Chocolatey..." -ForegroundColor Yellow
+    Write-Host "`nStep 8: Installing CLI tools via Chocolatey..." -ForegroundColor Yellow
 
     $chocoTools = @(
         "fzf",
@@ -148,7 +148,8 @@ function Install-ChocolateyTools {
         "tree",
         "ncdu",
         "httpie",
-        "duf"
+        "duf",
+        "llvm"
     )
 
     foreach ($tool in $chocoTools) {
@@ -168,7 +169,7 @@ function Install-ChocolateyTools {
 
 # -------------------- Install CLI Tools via Scoop --------------------
 function Install-ScoopTools {
-    Write-Host "`nStep 6: Installing CLI tools via Scoop..." -ForegroundColor Yellow
+    Write-Host "`nStep 9: Installing CLI tools via Scoop..." -ForegroundColor Yellow
 
     if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
         Write-Warning "Scoop is not available, skipping Scoop tools installation"
@@ -200,7 +201,7 @@ function Install-ScoopTools {
 
 # -------------------- Install WezTerm --------------------
 function Install-WezTerm {
-    Write-Host "`nStep 7: Installing WezTerm..." -ForegroundColor Yellow
+    Write-Host "`nStep 10: Installing WezTerm..." -ForegroundColor Yellow
 
     choco install wezterm -y
 
@@ -248,7 +249,7 @@ end
 config.default_prog = { 'powershell.exe' }
 
 -- Font configuration
-config.font = wezterm.font('JetBrainsMono Nerd Font')
+config.font = wezterm.font('JetBrains Mono')
 config.font_size = 12.0
 config.line_height = 1.2
 config.cell_width = 1.0
@@ -366,7 +367,7 @@ return config
 
 # -------------------- Install Google Chrome --------------------
 function Install-Chrome {
-    Write-Host "`nStep 8: Installing Google Chrome..." -ForegroundColor Yellow
+    Write-Host "`nStep 2: Installing Google Chrome..." -ForegroundColor Yellow
 
     choco install googlechrome -y
 
@@ -382,7 +383,7 @@ function Install-Chrome {
 
 # -------------------- Install Git --------------------
 function Install-Git {
-    Write-Host "`nStep 9: Installing Git..." -ForegroundColor Yellow
+    Write-Host "`nStep 3: Installing Git..." -ForegroundColor Yellow
 
     choco install git -y
 
@@ -398,7 +399,7 @@ function Install-Git {
 
 # -------------------- Install Starship --------------------
 function Install-Starship {
-    Write-Host "`nStep 10: Installing Starship prompt..." -ForegroundColor Yellow
+    Write-Host "`nStep 11: Installing Starship prompt..." -ForegroundColor Yellow
 
     if (Get-Command starship -ErrorAction SilentlyContinue) {
         Write-Host "Starship is already installed." -ForegroundColor Green
@@ -1454,6 +1455,108 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     Write-Host "  <Leader>q = Quit" -ForegroundColor White
 }
 
+
+# -------------------- Install Programming Languages --------------------
+function Install-ProgrammingLanguages {
+    Write-Host "`nStep 14: Installing programming languages..." -ForegroundColor Yellow
+
+    $languages = @(
+        @{Name="Node.js"; Package="nodejs"; Description="JavaScript runtime"},
+        @{Name="Go"; Package="golang"; Description="Go programming language"},
+        @{Name="Python"; Package="python"; Description="Python programming language"},
+        @{Name="Rust"; Package="rust"; Description="Rust programming language"}
+    )
+
+    foreach ($lang in $languages) {
+        Write-Host "Installing $($lang.Name) ($($lang.Description))..." -ForegroundColor Cyan
+        choco install $($lang.Package) -y
+
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ $($lang.Name) installed successfully!" -ForegroundColor Green
+        } else {
+            Write-Warning "❌ $($lang.Name) installation may have encountered issues."
+        }
+    }
+
+    # Refresh environment variables after all installations
+    Write-Host "Refreshing environment variables..." -ForegroundColor Cyan
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+    # Verify installations
+    Write-Host ""
+    Write-Host "Verifying language installations:" -ForegroundColor Cyan
+
+    # Check Node.js
+    try {
+        $nodeVersion = & node --version 2>$null
+        if ($nodeVersion) {
+            Write-Host "  ✅ Node.js: $nodeVersion" -ForegroundColor Green
+
+            # Also check npm
+            $npmVersion = & npm --version 2>$null
+            if ($npmVersion) {
+                Write-Host "  ✅ npm: v$npmVersion" -ForegroundColor Green
+            }
+        }
+    } catch {
+        Write-Host "  ❌ Node.js: Not found or not working" -ForegroundColor Red
+    }
+
+    # Check Go
+    try {
+        $goVersion = & go version 2>$null
+        if ($goVersion) {
+            Write-Host "  ✅ Go: $($goVersion -replace 'go version ', '')" -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "  ❌ Go: Not found or not working" -ForegroundColor Red
+    }
+
+    # Check Python
+    try {
+        $pythonVersion = & python --version 2>$null
+        if ($pythonVersion) {
+            Write-Host "  ✅ Python: $pythonVersion" -ForegroundColor Green
+
+            # Also check pip
+            $pipVersion = & pip --version 2>$null
+            if ($pipVersion) {
+                $pipVersionClean = ($pipVersion -split ' ')[1]
+                Write-Host "  ✅ pip: v$pipVersionClean" -ForegroundColor Green
+            }
+        }
+    } catch {
+        Write-Host "  ❌ Python: Not found or not working" -ForegroundColor Red
+    }
+
+    # Check Rust
+    try {
+        $rustVersion = & rustc --version 2>$null
+        if ($rustVersion) {
+            Write-Host "  ✅ Rust: $($rustVersion -replace 'rustc ', '')" -ForegroundColor Green
+
+            # Also check cargo
+            $cargoVersion = & cargo --version 2>$null
+            if ($cargoVersion) {
+                Write-Host "  ✅ Cargo: $($cargoVersion -replace 'cargo ', '')" -ForegroundColor Green
+            }
+        }
+    } catch {
+        Write-Host "  ❌ Rust: Not found or not working" -ForegroundColor Red
+    }
+
+    Write-Host ""
+    Write-Host "Programming languages installation completed!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Next steps for each language:" -ForegroundColor Yellow
+    Write-Host "  📦 Node.js: npm install -g yarn pnpm typescript" -ForegroundColor White
+    Write-Host "  🐍 Python: pip install --upgrade pip setuptools wheel" -ForegroundColor White
+    Write-Host "  🦀 Rust: cargo install cargo-edit cargo-watch" -ForegroundColor White
+    Write-Host "  🐹 Go: go install golang.org/x/tools/gopls@latest" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Note: You may need to restart your terminal for PATH changes to take effect." -ForegroundColor Cyan
+}
+
 # -------------------- Main execution --------------------
 try {
     # Step 1: Install Chocolatey
@@ -1466,7 +1569,7 @@ try {
     Install-Git
 
     # Step 4: Configure Git
-    Write-Host "`nStep 11: Configuring Git..." -ForegroundColor Yellow
+    Write-Host "`nStep 4: Configuring Git..." -ForegroundColor Yellow
 
     Create-GlobalGitignore
     Ensure-Delta
@@ -1503,8 +1606,11 @@ try {
     Configure-PowerShellProfile
 
     # Step 13: Install and configure Neovim
-    Write-Host "`nStep 12: Install and configure neovim..." -ForegroundColor Yellow
+    Write-Host "`nStep 13: Install and configure neovim..." -ForegroundColor Yellow
     Install-AndConfigure-Neovim
+
+    # Step 14: Install programming languaches and runtimes
+    Install-ProgrammingLanguages
 
     Write-Host "`nAll done! Your system is now configured." -ForegroundColor Green
     Write-Host "Installed software:" -ForegroundColor Cyan
