@@ -1138,26 +1138,26 @@ try {
     # Step 2: Configure Scoop (buckets)
     Configure-Scoop
 
-    # Step 3: Install Fonts
-    Install-Fonts
-
-    # Step 4: Install Essential Applications
-    Install-EssentialApplications
-
-    # Step 5: Install CLI tools via Chocolatey
-    Install-ChocolateyTools
-
-    # Step 6: Install CLI tools via Scoop
-    Install-ScoopTools
-
-    # Step 7: Install WezTerm
-    Install-WezTerm
-
-    # Step 8: Install Chrome and wait for user configuration
+    # Step 3: Install Chrome and wait for user configuration
     Install-Chrome
 
-    # Step 9: Install Git
+    # Step 4: Install Git
     Install-Git
+
+    # Step 5: Install Fonts
+    Install-Fonts
+
+    # Step 6: Install Essential Applications
+    Install-EssentialApplications
+
+    # Step 7: Install CLI tools via Chocolatey
+    Install-ChocolateyTools
+
+    # Step 8: Install CLI tools via Scoop
+    Install-ScoopTools
+
+    # Step 9: Install WezTerm
+    Install-WezTerm
 
     # Step 10: Install Starship
     Install-Starship
