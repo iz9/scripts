@@ -44,7 +44,7 @@ function Install-Scoop {
 
     # Install Scoop
     try {
-        iwr -useb get.scoop.sh | iex
+        iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
 
         # Refresh environment variables
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
