@@ -1135,14 +1135,14 @@ try {
     # Step 1: Install Chocolatey
     Install-Chocolatey
 
-    # Step 2: Configure Scoop (buckets)
-    Configure-Scoop
-
-    # Step 3: Install Chrome and wait for user configuration
+    # Step 2: Install Chrome and wait for user configuration
     Install-Chrome
 
-    # Step 4: Install Git
+    # Step 3: Install Git
     Install-Git
+
+    # Step 4: Configure Scoop (buckets)
+    Configure-Scoop
 
     # Step 5: Install Fonts
     Install-Fonts
