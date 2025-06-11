@@ -2407,11 +2407,11 @@ function Install-ConfigureVSCode {
             "command" = "workbench.view.extensions"
         },
         @{
-            "key" = "ctrl+`"
+            "key" = "ctrl+``"
             "command" = "workbench.action.terminal.toggleTerminal"
         },
         @{
-            "key" = "ctrl+shift+`"
+            "key" = "ctrl+shift+``"
             "command" = "workbench.action.terminal.new"
         },
         @{
