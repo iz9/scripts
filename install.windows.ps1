@@ -1558,7 +1558,7 @@ function Install-ProgrammingLanguages {
 
 # -------------------- Install Visual Studio Build Tools with C++ --------------------
 function Install-VisualStudioCppTools {
-    Write-Host "`nStep 15: Installing Visual Studio Build Tools with C++ support..." -ForegroundColor Yellow
+    Write-Host "`nStep 17: Installing Visual Studio Build Tools with C++ support..." -ForegroundColor Yellow
 
     # Check if Visual Studio Installer exists
     $vsInstallerPath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
@@ -1659,6 +1659,845 @@ function Install-VisualStudioCppTools {
     Write-Host "Note: You may need to restart PowerShell for PATH changes to take effect." -ForegroundColor Cyan
 }
 
+
+# -------------------- Install and Configure Total Commander --------------------
+function Install-ConfigureTotalCommander {
+    Write-Host "`nStep 15: Installing and configuring Total Commander..." -ForegroundColor Yellow
+
+    # Install Total Commander via Chocolatey
+    Write-Host "Installing Total Commander..." -ForegroundColor Cyan
+    choco install totalcommander -y
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Failed to install Total Commander via Chocolatey"
+        return
+    }
+
+    Write-Host "Total Commander installed successfully!" -ForegroundColor Green
+
+    # Wait a moment for installation to complete
+    Start-Sleep -Seconds 3
+
+    # Find Total Commander installation path
+    $tcPaths = @(
+        "${env:ProgramFiles}\totalcmd\TOTALCMD64.EXE",
+        "${env:ProgramFiles(x86)}\totalcmd\TOTALCMD.EXE",
+        "$env:LOCALAPPDATA\totalcmd\TOTALCMD64.EXE",
+        "${env:ProgramFiles}\Total Commander\TOTALCMD64.EXE",
+        "${env:ProgramFiles(x86)}\Total Commander\TOTALCMD.EXE"
+    )
+
+    $tcPath = $tcPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+    if (-not $tcPath) {
+        Write-Warning "Total Commander executable not found after installation. Skipping configuration."
+        return
+    }
+
+    $tcDir = Split-Path $tcPath -Parent
+    $wincmdIni = Join-Path $tcDir "wincmd.ini"
+
+    Write-Host "Found Total Commander at: $tcDir" -ForegroundColor Green
+    Write-Host "Configuration file: $wincmdIni" -ForegroundColor Cyan
+
+    # Backup existing configuration
+    if (Test-Path $wincmdIni) {
+        $backupPath = "$wincmdIni.backup.$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+        Copy-Item $wincmdIni $backupPath -ErrorAction SilentlyContinue
+        Write-Host "Backed up existing config to: $backupPath" -ForegroundColor Gray
+    }
+
+    # Helper function to set INI values
+    function Set-IniValue {
+        param(
+            [string]$FilePath,
+            [string]$Section,
+            [string]$Key,
+            [string]$Value
+        )
+
+        try {
+            if (-not (Test-Path $FilePath)) {
+                New-Item -Path $FilePath -ItemType File -Force | Out-Null
+            }
+
+            $content = Get-Content $FilePath -ErrorAction SilentlyContinue
+            if (-not $content) { $content = @() }
+
+            $sectionFound = $false
+            $keyFound = $false
+            $newContent = @()
+
+            foreach ($line in $content) {
+                if ($line -match "^\[$Section\]") {
+                    $sectionFound = $true
+                    $newContent += $line
+                }
+                elseif ($sectionFound -and $line -match "^$Key=") {
+                    $newContent += "$Key=$Value"
+                    $keyFound = $true
+                }
+                elseif ($sectionFound -and $line -match "^\[.*\]" -and $line -notmatch "^\[$Section\]") {
+                    if (-not $keyFound) {
+                        $newContent += "$Key=$Value"
+                    }
+                    $newContent += $line
+                    $sectionFound = $false
+                }
+                else {
+                    $newContent += $line
+                }
+            }
+
+            if ($sectionFound -and -not $keyFound) {
+                $newContent += "$Key=$Value"
+            }
+            elseif (-not $sectionFound) {
+                $newContent += "[$Section]"
+                $newContent += "$Key=$Value"
+            }
+
+            $newContent | Out-File -FilePath $FilePath -Encoding UTF8 -Force
+        } catch {
+            Write-Warning "Failed to set $Section/$Key in $FilePath: $_"
+        }
+    }
+
+    Write-Host "Configuring Total Commander settings..." -ForegroundColor Cyan
+
+    # ==================== GENERAL CONFIGURATION ====================
+    # Interface settings
+    Set-IniValue $wincmdIni "Configuration" "UseNewDefFont" "1"
+    Set-IniValue $wincmdIni "Configuration" "FontSize" "10"
+    Set-IniValue $wincmdIni "Configuration" "FontName" "Segoe UI"
+    Set-IniValue $wincmdIni "Configuration" "SizeStyle" "4"
+    Set-IniValue $wincmdIni "Configuration" "SeparateTree" "1"
+    Set-IniValue $wincmdIni "Configuration" "PanelFont" "Consolas,10"
+
+    # File operations
+    Set-IniValue $wincmdIni "Configuration" "CopyComments" "6"
+    Set-IniValue $wincmdIni "Configuration" "FirstTime" "0"
+    Set-IniValue $wincmdIni "Configuration" "FirstTimeIconLib" "0"
+    Set-IniValue $wincmdIni "Configuration" "SortDirsByName" "1"
+    Set-IniValue $wincmdIni "Configuration" "AlwaysToRoot" "0"
+    Set-IniValue $wincmdIni "Configuration" "SingleClickStart" "0"
+    Set-IniValue $wincmdIni "Configuration" "RenameSelOnlyName" "1"
+
+    # View settings
+    Set-IniValue $wincmdIni "Configuration" "ShowHiddenSystem" "1"
+    Set-IniValue $wincmdIni "Configuration" "ThumbnailsInPercent" "100"
+    Set-IniValue $wincmdIni "Configuration" "IconsInMenus" "7"
+    Set-IniValue $wincmdIni "Configuration" "DriveBarStyle" "1"
+
+    # ==================== COLORS AND DISPLAY ====================
+    Set-IniValue $wincmdIni "Colors" "InverseCursor" "1"
+    Set-IniValue $wincmdIni "Colors" "InverseSelection" "1"
+    Set-IniValue $wincmdIni "Colors" "Background" "16777215"
+    Set-IniValue $wincmdIni "Colors" "Foreground" "0"
+    Set-IniValue $wincmdIni "Colors" "Mark" "255"
+    Set-IniValue $wincmdIni "Colors" "Cursor" "128"
+
+    # ==================== TABS CONFIGURATION ====================
+    Set-IniValue $wincmdIni "Configuration" "UseTabs" "1"
+    Set-IniValue $wincmdIni "Configuration" "TabChangeTimer" "750"
+    Set-IniValue $wincmdIni "Configuration" "TabsAlwaysVisible" "1"
+    Set-IniValue $wincmdIni "Configuration" "DirTabOptions" "824"
+    Set-IniValue $wincmdIni "Configuration" "MaxTabTextLength" "32"
+
+    # ==================== COMPRESSION TOOLS ====================
+    $sevenZipPaths = @(
+        "${env:ProgramFiles}\7-Zip\7z.exe",
+        "${env:ProgramFiles(x86)}\7-Zip\7z.exe"
+    )
+    $sevenZipPath = $sevenZipPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+    if ($sevenZipPath) {
+        Set-IniValue $wincmdIni "PackerPlugins" "7zip" "$sevenZipPath"
+        Write-Host "  ✓ Configured 7-Zip integration" -ForegroundColor Green
+    }
+
+    # ==================== CUSTOM COLUMNS ====================
+    Set-IniValue $wincmdIni "CustomFields1" "title0" "Size in MB"
+    Set-IniValue $wincmdIni "CustomFields1" "content0" "[=tc.filesize]/1024/1024"
+    Set-IniValue $wincmdIni "CustomFields1" "detect0" "MULTIMEDIA | DOCS"
+
+    # ==================== DIRECTORY HOTLIST ====================
+    $commonDirs = @{
+        "Desktop" = [System.Environment]::GetFolderPath('Desktop')
+        "Documents" = [System.Environment]::GetFolderPath('MyDocuments')
+        "Downloads" = "$env:USERPROFILE\Downloads"
+        "Pictures" = [System.Environment]::GetFolderPath('MyPictures')
+        "Videos" = [System.Environment]::GetFolderPath('MyVideos')
+        "Music" = [System.Environment]::GetFolderPath('MyMusic')
+        "Projects" = "$env:USERPROFILE\Projects"
+        "Temp" = $env:TEMP
+    }
+
+    $index = 1
+    foreach ($name in $commonDirs.Keys) {
+        $path = $commonDirs[$name]
+        if (Test-Path $path) {
+            Set-IniValue $wincmdIni "DirMenu" "menu$index" "$name"
+            Set-IniValue $wincmdIni "DirMenu" "cmd$index" "cd $path"
+            $index++
+        }
+    }
+    Set-IniValue $wincmdIni "DirMenu" "MenuChangeMode" "16"
+
+    # ==================== BUTTON BAR CUSTOMIZATION ====================
+    Set-IniValue $wincmdIni "Buttonbar" "Buttonheight" "29"
+    Set-IniValue $wincmdIni "Buttonbar" "FlatIcons" "1"
+    Set-IniValue $wincmdIni "Buttonbar" "SmallIcons" "0"
+
+    # Command Prompt button
+    Set-IniValue $wincmdIni "Buttonbar" "button1" "cmd /k"
+    Set-IniValue $wincmdIni "Buttonbar" "iconic1" "0"
+    Set-IniValue $wincmdIni "Buttonbar" "tooltip1" "Open Command Prompt"
+
+    # PowerShell button
+    if (Get-Command pwsh -ErrorAction SilentlyContinue) {
+        Set-IniValue $wincmdIni "Buttonbar" "button2" "pwsh"
+        Set-IniValue $wincmdIni "Buttonbar" "iconic2" "0"
+        Set-IniValue $wincmdIni "Buttonbar" "tooltip2" "Open PowerShell"
+    } elseif (Get-Command powershell -ErrorAction SilentlyContinue) {
+        Set-IniValue $wincmdIni "Buttonbar" "button2" "powershell"
+        Set-IniValue $wincmdIni "Buttonbar" "iconic2" "0"
+        Set-IniValue $wincmdIni "Buttonbar" "tooltip2" "Open PowerShell"
+    }
+
+    # VS Code button
+    if (Get-Command code -ErrorAction SilentlyContinue) {
+        Set-IniValue $wincmdIni "Buttonbar" "button3" "code ."
+        Set-IniValue $wincmdIni "Buttonbar" "iconic3" "0"
+        Set-IniValue $wincmdIni "Buttonbar" "tooltip3" "Open VS Code"
+    }
+
+    # Windows Terminal button
+    if (Get-Command wt -ErrorAction SilentlyContinue) {
+        Set-IniValue $wincmdIni "Buttonbar" "button4" "wt"
+        Set-IniValue $wincmdIni "Buttonbar" "iconic4" "0"
+        Set-IniValue $wincmdIni "Buttonbar" "tooltip4" "Open Windows Terminal"
+    }
+
+    # ==================== CUSTOM TOOLS MENU ====================
+    # PowerShell Here
+    Set-IniValue $wincmdIni "Command1" "cmd" "powershell.exe"
+    Set-IniValue $wincmdIni "Command1" "param" "-NoExit -Command Set-Location '%P'"
+    Set-IniValue $wincmdIni "Command1" "menu" "PowerShell Here"
+    Set-IniValue $wincmdIni "Command1" "iconic" "0"
+
+    # Command Prompt Here
+    Set-IniValue $wincmdIni "Command2" "cmd" "cmd.exe"
+    Set-IniValue $wincmdIni "Command2" "param" "/k cd /d %P"
+    Set-IniValue $wincmdIni "Command2" "menu" "Command Prompt Here"
+    Set-IniValue $wincmdIni "Command2" "iconic" "0"
+
+    # VS Code
+    if (Get-Command code -ErrorAction SilentlyContinue) {
+        Set-IniValue $wincmdIni "Command3" "cmd" "code"
+        Set-IniValue $wincmdIni "Command3" "param" "%P"
+        Set-IniValue $wincmdIni "Command3" "menu" "Open in VS Code"
+        Set-IniValue $wincmdIni "Command3" "iconic" "0"
+    }
+
+    # ==================== FILE ASSOCIATIONS ====================
+    if (Get-Command code -ErrorAction SilentlyContinue) {
+        $codeAssociations = @("txt", "log", "cfg", "ini", "json", "xml", "yml", "yaml", "md", "ps1", "bat", "cmd")
+        foreach ($ext in $codeAssociations) {
+            Set-IniValue $wincmdIni "FileSystemPlugins64" $ext "code %1"
+        }
+        Write-Host "  ✓ Configured VS Code file associations" -ForegroundColor Green
+    }
+
+    # ==================== SEARCH SETTINGS ====================
+    Set-IniValue $wincmdIni "Configuration" "SearchFor" "*.*"
+    Set-IniValue $wincmdIni "Configuration" "SearchIn" "%P"
+    Set-IniValue $wincmdIni "Configuration" "SearchText" ""
+    Set-IniValue $wincmdIni "Configuration" "SearchFlags" "0"
+    Set-IniValue $wincmdIni "Configuration" "QuickSearch" "2"
+    Set-IniValue $wincmdIni "Configuration" "QuickSearchAutoFilter" "1"
+
+    # ==================== KEYBOARD SHORTCUTS ====================
+    Set-IniValue $wincmdIni "Shortcuts" "C+O" "cm_EditPath"
+    Set-IniValue $wincmdIni "Shortcuts" "C+E" "cm_Edit"
+    Set-IniValue $wincmdIni "Shortcuts" "C+T" "cm_OpenNewTab"
+    Set-IniValue $wincmdIni "Shortcuts" "C+W" "cm_CloseCurrentTab"
+    Set-IniValue $wincmdIni "Shortcuts" "F4" "cm_Edit"
+    Set-IniValue $wincmdIni "Shortcuts" "C+D" "cm_Delete"
+    Set-IniValue $wincmdIni "Shortcuts" "C+N" "cm_MkDir"
+
+    # ==================== FTP SETTINGS ====================
+    Set-IniValue $wincmdIni "Configuration" "FtpIniName" "$tcDir\wcx_ftp.ini"
+    Set-IniValue $wincmdIni "Configuration" "DefaultFtpClientMode" "0"
+
+    # ==================== COPY/MOVE SETTINGS ====================
+    Set-IniValue $wincmdIni "Configuration" "CopyComments" "6"
+    Set-IniValue $wincmdIni "Configuration" "LogOptions" "4113"
+    Set-IniValue $wincmdIni "Configuration" "LogRotateLimit" "1000000"
+    Set-IniValue $wincmdIni "Configuration" "UseLongNames" "1"
+    Set-IniValue $wincmdIni "Configuration" "ShowCopyTabOptions" "1"
+
+    # ==================== MISC SETTINGS ====================
+    Set-IniValue $wincmdIni "Configuration" "AlwaysOnTop" "0"
+    Set-IniValue $wincmdIni "Configuration" "Maximized" "0"
+    Set-IniValue $wincmdIni "Configuration" "MinimizeToTray" "0"
+    Set-IniValue $wincmdIni "Configuration" "CmdLineHistorySize" "50"
+    Set-IniValue $wincmdIni "Configuration" "ShowCentury" "1"
+    Set-IniValue $wincmdIni "Configuration" "ShowSeconds" "1"
+
+    # Refresh environment variables
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+    Write-Host "✅ Total Commander installation and configuration completed!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Configuration includes:" -ForegroundColor Cyan
+    Write-Host "  ✓ Modern font settings (Segoe UI/Consolas)" -ForegroundColor White
+    Write-Host "  ✓ Show hidden/system files enabled" -ForegroundColor White
+    Write-Host "  ✓ Tabbed interface with optimized settings" -ForegroundColor White
+    Write-Host "  ✓ Directory hotlist with common folders" -ForegroundColor White
+    Write-Host "  ✓ Custom button bar (CMD, PowerShell, VS Code, Terminal)" -ForegroundColor White
+    Write-Host "  ✓ Custom tools menu for developer workflows" -ForegroundColor White
+    Write-Host "  ✓ 7-Zip integration (if 7-Zip is installed)" -ForegroundColor White
+    Write-Host "  ✓ VS Code file associations (if VS Code is installed)" -ForegroundColor White
+    Write-Host "  ✓ Enhanced search and quick search settings" -ForegroundColor White
+    Write-Host "  ✓ Optimized copy/move operations" -ForegroundColor White
+    Write-Host "  ✓ Developer-friendly keyboard shortcuts" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Note: Please restart Total Commander to apply all changes." -ForegroundColor Yellow
+}
+
+
+# -------------------- Install and Configure Visual Studio Code --------------------
+function Install-ConfigureVSCode {
+    Write-Host "`nStep X: Installing and configuring Visual Studio Code..." -ForegroundColor Yellow
+
+    # Install VS Code via Chocolatey
+    Write-Host "Installing Visual Studio Code..." -ForegroundColor Cyan
+    choco install vscode -y
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Failed to install VS Code via Chocolatey"
+        return
+    }
+
+    Write-Host "Visual Studio Code installed successfully!" -ForegroundColor Green
+
+    # Refresh environment variables
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+    # Wait a moment for installation to complete
+    Start-Sleep -Seconds 5
+
+    # Verify VS Code installation
+    if (-not (Get-Command code -ErrorAction SilentlyContinue)) {
+        Write-Warning "VS Code 'code' command not found in PATH. Please restart PowerShell and try again."
+        return
+    }
+
+    Write-Host "Configuring VS Code settings and extensions..." -ForegroundColor Cyan
+
+    # VS Code settings directory
+    $vscodeSettingsDir = "$env:APPDATA\Code\User"
+    if (-not (Test-Path $vscodeSettingsDir)) {
+        New-Item -ItemType Directory -Path $vscodeSettingsDir -Force | Out-Null
+        Write-Host "Created VS Code settings directory: $vscodeSettingsDir" -ForegroundColor Gray
+    }
+
+    # ==================== INSTALL ESSENTIAL EXTENSIONS ====================
+    Write-Host "Installing essential VS Code extensions..." -ForegroundColor Cyan
+
+    $essentialExtensions = @(
+    # Language Support
+        "ms-python.python",                    # Python
+        "ms-vscode.powershell",               # PowerShell
+        "ms-dotnettools.csharp",              # C#
+        "ms-vscode.vscode-typescript-next",   # TypeScript
+        "bradlc.vscode-tailwindcss",          # Tailwind CSS
+        "esbenp.prettier-vscode",             # Prettier
+        "ms-vscode.vscode-json",              # JSON
+
+        # Web Development
+        "formulahendry.auto-rename-tag",      # Auto Rename Tag
+        "bradlc.vscode-tailwindcss",          # Tailwind CSS
+        "ms-vscode.live-server",              # Live Server
+        "ritwickdey.liveserver",              # Live Server (alternative)
+
+        # Git & Version Control
+        "eamodio.gitlens",                    # GitLens
+        "mhutchie.git-graph",                 # Git Graph
+        "donjayamanne.githistory",            # Git History
+
+        # Productivity & UI
+        "ms-vscode-remote.remote-wsl",        # WSL Remote
+        "ms-vscode-remote.remote-ssh",        # SSH Remote
+        "ms-vscode.remote-explorer",          # Remote Explorer
+        "gruntfuggly.todo-tree",              # TODO Tree
+        "aaron-bond.better-comments",         # Better Comments
+        "oderwat.indent-rainbow",             # Indent Rainbow
+        "streetsidesoftware.code-spell-checker", # Code Spell Checker
+
+        # File Management
+        "alefragnani.project-manager",        # Project Manager
+        "alefragnani.bookmarks",              # Bookmarks
+        "christian-kohler.path-intellisense", # Path Intellisense
+        "ms-vscode.vscode-json",              # JSON Tools
+
+        # Themes & Icons
+        "pkief.material-icon-theme",          # Material Icon Theme
+        "zhuangtongfa.material-theme",        # One Dark Pro
+        "dracula-theme.theme-dracula",        # Dracula Official
+
+        # Docker & Containers
+        "ms-azuretools.vscode-docker",        # Docker
+        "ms-vscode-remote.remote-containers", # Dev Containers
+
+        # Markdown & Documentation
+        "yzhang.markdown-all-in-one",         # Markdown All in One
+        "shd101wyy.markdown-preview-enhanced", # Markdown Preview Enhanced
+
+        # Utilities
+        "ms-vsliveshare.vsliveshare",         # Live Share
+        "humao.rest-client",                  # REST Client
+        "ms-vscode.hexeditor",                # Hex Editor
+        "redhat.vscode-yaml",                 # YAML
+        "ms-vscode.vscode-json",              # JSON
+        "formulahendry.auto-close-tag",       # Auto Close Tag
+
+        # AI & IntelliSense
+        "github.copilot",                     # GitHub Copilot (if available)
+        "ms-vscode.vscode-ai",                # VS Code AI (if available)
+        "tabnine.tabnine-vscode"              # Tabnine AI
+    )
+
+    $installedExtensions = @()
+    $failedExtensions = @()
+
+    foreach ($extension in $essentialExtensions) {
+        Write-Host "  Installing $extension..." -ForegroundColor Gray
+        try {
+            $result = & code --install-extension $extension --force 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                $installedExtensions += $extension
+                Write-Host "    ✓ $extension" -ForegroundColor Green
+            } else {
+                $failedExtensions += $extension
+                Write-Host "    ✗ $extension (Error: $result)" -ForegroundColor Red
+            }
+        } catch {
+            $failedExtensions += $extension
+            Write-Host "    ✗ $extension (Exception: $_)" -ForegroundColor Red
+        }
+        Start-Sleep -Milliseconds 500  # Brief pause between installations
+    }
+
+    Write-Host ""
+    Write-Host "Extension installation summary:" -ForegroundColor Cyan
+    Write-Host "  ✓ Installed: $($installedExtensions.Count)" -ForegroundColor Green
+    Write-Host "  ✗ Failed: $($failedExtensions.Count)" -ForegroundColor Red
+
+    if ($failedExtensions.Count -gt 0) {
+        Write-Host "Failed extensions:" -ForegroundColor Yellow
+        $failedExtensions | ForEach-Object { Write-Host "    - $_" -ForegroundColor Gray }
+    }
+
+    # ==================== CREATE SETTINGS.JSON ====================
+    Write-Host "Creating VS Code settings.json..." -ForegroundColor Cyan
+
+    $settingsPath = Join-Path $vscodeSettingsDir "settings.json"
+
+    $vscodeSettings = @{
+        # ==================== GENERAL SETTINGS ====================
+        "workbench.startupEditor" = "newUntitledFile"
+        "workbench.colorTheme" = "One Dark Pro"
+        "workbench.iconTheme" = "material-icon-theme"
+        "workbench.tree.indent" = 16
+        "workbench.list.smoothScrolling" = $true
+        "workbench.editor.enablePreview" = $false
+        "workbench.editor.closeOnFileDelete" = $true
+        "workbench.commandPalette.history" = 50
+
+        # ==================== EDITOR SETTINGS ====================
+        "editor.fontSize" = 14
+        "editor.fontFamily" = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace"
+        "editor.fontLigatures" = $true
+        "editor.lineHeight" = 1.6
+        "editor.cursorBlinking" = "smooth"
+        "editor.cursorSmoothCaretAnimation" = "on"
+        "editor.smoothScrolling" = $true
+        "editor.mouseWheelScrollSensitivity" = 1
+        "editor.fastScrollSensitivity" = 5
+
+        # Indentation & Formatting
+        "editor.tabSize" = 4
+        "editor.insertSpaces" = $true
+        "editor.detectIndentation" = $true
+        "editor.formatOnSave" = $true
+        "editor.formatOnPaste" = $true
+        "editor.formatOnType" = $false
+        "editor.trimAutoWhitespace" = $true
+        "files.trimTrailingWhitespace" = $true
+        "files.insertFinalNewline" = $true
+        "files.trimFinalNewlines" = $true
+
+        # IntelliSense & Suggestions
+        "editor.suggestSelection" = "first"
+        "editor.acceptSuggestionOnCommitCharacter" = $true
+        "editor.acceptSuggestionOnEnter" = "on"
+        "editor.wordBasedSuggestions" = "matchingDocuments"
+        "editor.quickSuggestions" = @{
+            "other" = $true
+            "comments" = $false
+            "strings" = $false
+        }
+
+        # Code Display
+        "editor.renderWhitespace" = "boundary"
+        "editor.renderControlCharacters" = $false
+        "editor.renderLineHighlight" = "all"
+        "editor.showFoldingControls" = "mouseover"
+        "editor.foldingStrategy" = "auto"
+        "editor.bracketPairColorization.enabled" = $true
+        "editor.guides.bracketPairs" = $true
+        "editor.guides.bracketPairsHorizontal" = $true
+        "editor.guides.indentation" = $true
+
+        # Minimap
+        "editor.minimap.enabled" = $true
+        "editor.minimap.renderCharacters" = $false
+        "editor.minimap.showSlider" = "always"
+        "editor.minimap.side" = "right"
+
+        # ==================== FILE SETTINGS ====================
+        "files.autoSave" = "afterDelay"
+        "files.autoSaveDelay" = 1000
+        "files.encoding" = "utf8"
+        "files.eol" = "`n"
+        "files.hotExit" = "onExit"
+
+        # File Associations
+        "files.associations" = @{
+            "*.ps1" = "powershell"
+            "*.psm1" = "powershell"
+            "*.psd1" = "powershell"
+            "*.json" = "jsonc"
+            "*.jsonc" = "jsonc"
+            ".gitignore" = "ignore"
+            ".gitattributes" = "gitattributes"
+            "Dockerfile*" = "dockerfile"
+            "*.yml" = "yaml"
+            "*.yaml" = "yaml"
+        }
+
+        # Exclude patterns
+        "files.exclude" = @{
+            "**/.git" = $true
+            "**/.svn" = $true
+            "**/.hg" = $true
+            "**/CVS" = $true
+            "**/.DS_Store" = $true
+            "**/.vscode" = $false
+            "**/node_modules" = $true
+            "**/bower_components" = $true
+            "**/.nyc_output" = $true
+            "**/coverage" = $true
+            "**/.pytest_cache" = $true
+            "**/__pycache__" = $true
+            "**/*.pyc" = $true
+            "**/bin" = $true
+            "**/obj" = $true
+        }
+
+        # ==================== SEARCH SETTINGS ====================
+        "search.exclude" = @{
+            "**/node_modules" = $true
+            "**/bower_components" = $true
+            "**/*.code-search" = $true
+            "**/.git" = $true
+            "**/coverage" = $true
+            "**/dist" = $true
+            "**/build" = $true
+            "**/.nyc_output" = $true
+            "**/.pytest_cache" = $true
+            "**/__pycache__" = $true
+        }
+        "search.smartCase" = $true
+        "search.useIgnoreFiles" = $true
+
+        # ==================== TERMINAL SETTINGS ====================
+        "terminal.integrated.defaultProfile.windows" = "PowerShell"
+        "terminal.integrated.profiles.windows" = @{
+            "PowerShell" = @{
+                "source" = "PowerShell"
+                "icon" = "terminal-powershell"
+            }
+            "Command Prompt" = @{
+                "path" = @(
+                "${env:windir}\\Sysnative\\cmd.exe",
+                "${env:windir}\\System32\\cmd.exe"
+                )
+                "args" = []
+                "icon" = "terminal-cmd"
+            }
+            "Git Bash" = @{
+                "source" = "Git Bash"
+            }
+        }
+        "terminal.integrated.fontSize" = 13
+        "terminal.integrated.fontFamily" = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas"
+        "terminal.integrated.cursorBlinking" = $true
+        "terminal.integrated.cursorStyle" = "block"
+        "terminal.integrated.scrollback" = 10000
+
+        # ==================== GIT SETTINGS ====================
+        "git.enableSmartCommit" = $true
+        "git.confirmSync" = $false
+        "git.autofetch" = $true
+        "git.autoStash" = $true
+        "git.enableStatusBarSync" = $true
+        "git.decorations.enabled" = $true
+
+        # ==================== LANGUAGE-SPECIFIC SETTINGS ====================
+        # PowerShell
+        "powershell.codeFormatting.preset" = "OTBS"
+        "powershell.integratedConsole.showOnStartup" = $false
+
+        # Python
+        "python.defaultInterpreterPath" = "python"
+        "python.formatting.provider" = "black"
+        "python.linting.enabled" = $true
+        "python.linting.pylintEnabled" = $false
+        "python.linting.flake8Enabled" = $true
+
+        # JavaScript/TypeScript
+        "javascript.updateImportsOnFileMove.enabled" = "always"
+        "typescript.updateImportsOnFileMove.enabled" = "always"
+        "javascript.suggest.autoImports" = $true
+        "typescript.suggest.autoImports" = $true
+
+        # JSON
+        "json.format.enable" = $true
+        "json.format.keepLines" = $false
+
+        # ==================== EXTENSION SETTINGS ====================
+        # GitLens
+        "gitlens.codeLens.enabled" = $true
+        "gitlens.currentLine.enabled" = $true
+        "gitlens.hovers.enabled" = $true
+
+        # Live Server
+        "liveServer.settings.donotShowInfoMsg" = $true
+        "liveServer.settings.donotVerifyTags" = $true
+
+        # TODO Tree
+        "todo-tree.general.tags" = @(
+            "BUG", "HACK", "FIXME", "TODO", "XXX", "[ ]", "[x]"
+        )
+        "todo-tree.regex.regex" = "((//|#|<!--|;|/\*|^)\s*($TAGS)|^\s*- \[ \])"
+
+        # Better Comments
+        "better-comments.tags" = @(
+            @{
+                "tag" = "!"
+                "color" = "#FF2D00"
+                "strikethrough" = $false
+                "underline" = $false
+                "backgroundColor" = "transparent"
+                "bold" = $false
+                "italic" = $false
+            },
+            @{
+                "tag" = "?"
+                "color" = "#3498DB"
+                "strikethrough" = $false
+                "underline" = $false
+                "backgroundColor" = "transparent"
+                "bold" = $false
+                "italic" = $false
+            },
+            @{
+                "tag" = "//"
+                "color" = "#474747"
+                "strikethrough" = $true
+                "underline" = $false
+                "backgroundColor" = "transparent"
+                "bold" = $false
+                "italic" = $false
+            },
+            @{
+                "tag" = "todo"
+                "color" = "#FF8C00"
+                "strikethrough" = $false
+                "underline" = $false
+                "backgroundColor" = "transparent"
+                "bold" = $false
+                "italic" = $false
+            },
+            @{
+                "tag" = "*"
+                "color" = "#98C379"
+                "strikethrough" = $false
+                "underline" = $false
+                "backgroundColor" = "transparent"
+                "bold" = $false
+                "italic" = $false
+            }
+        )
+
+        # Auto Close Tag
+        "auto-close-tag.activationOnLanguage" = @(
+            "xml", "php", "blade", "ejs", "jinja", "javascript", "javascriptreact",
+            "typescript", "typescriptreact", "plaintext", "markdown", "vue",
+            "liquid", "erb", "lang-cfml", "cfml", "HTML (EEx)", "HTML (Eex)",
+            "plist"
+        )
+
+        # ==================== SECURITY & PRIVACY ====================
+        "telemetry.telemetryLevel" = "off"
+        "update.showReleaseNotes" = $false
+        "extensions.autoCheckUpdates" = $true
+        "extensions.autoUpdate" = $true
+
+        # ==================== PERFORMANCE ====================
+        "extensions.ignoreRecommendations" = $false
+        "workbench.reduceMotion" = "auto"
+        "workbench.enableExperiments" = $false
+    }
+
+    # Convert to JSON and save
+    try {
+        $jsonSettings = $vscodeSettings | ConvertTo-Json -Depth 10
+        $jsonSettings | Out-File -FilePath $settingsPath -Encoding UTF8 -Force
+        Write-Host "✓ VS Code settings.json created successfully" -ForegroundColor Green
+    } catch {
+        Write-Warning "Failed to create settings.json: $_"
+    }
+
+    # ==================== CREATE KEYBINDINGS.JSON ====================
+    Write-Host "Creating VS Code keybindings.json..." -ForegroundColor Cyan
+
+    $keybindingsPath = Join-Path $vscodeSettingsDir "keybindings.json"
+
+    $keybindings = @(
+        @{
+            "key" = "ctrl+shift+alt+f"
+            "command" = "editor.action.formatDocument"
+        },
+        @{
+            "key" = "ctrl+k ctrl+d"
+            "command" = "editor.action.formatDocument"
+        },
+        @{
+            "key" = "ctrl+shift+p"
+            "command" = "workbench.action.showCommands"
+        },
+        @{
+            "key" = "ctrl+shift+e"
+            "command" = "workbench.view.explorer"
+        },
+        @{
+            "key" = "ctrl+shift+g"
+            "command" = "workbench.view.scm"
+        },
+        @{
+            "key" = "ctrl+shift+d"
+            "command" = "workbench.view.debug"
+        },
+        @{
+            "key" = "ctrl+shift+x"
+            "command" = "workbench.view.extensions"
+        },
+        @{
+            "key" = "ctrl+`"
+            "command" = "workbench.action.terminal.toggleTerminal"
+        },
+        @{
+            "key" = "ctrl+shift+`"
+            "command" = "workbench.action.terminal.new"
+        },
+        @{
+            "key" = "ctrl+w"
+            "command" = "workbench.action.closeActiveEditor"
+        },
+        @{
+            "key" = "ctrl+shift+t"
+            "command" = "workbench.action.reopenClosedEditor"
+        }
+    )
+
+    try {
+        $jsonKeybindings = $keybindings | ConvertTo-Json -Depth 5
+        $jsonKeybindings | Out-File -FilePath $keybindingsPath -Encoding UTF8 -Force
+        Write-Host "✓ VS Code keybindings.json created successfully" -ForegroundColor Green
+    } catch {
+        Write-Warning "Failed to create keybindings.json: $_"
+    }
+
+    # ==================== CREATE SNIPPETS ====================
+    Write-Host "Creating custom snippets..." -ForegroundColor Cyan
+
+    $snippetsDir = Join-Path $vscodeSettingsDir "snippets"
+    if (-not (Test-Path $snippetsDir)) {
+        New-Item -ItemType Directory -Path $snippetsDir -Force | Out-Null
+    }
+
+    # PowerShell snippets
+    $powershellSnippetsPath = Join-Path $snippetsDir "powershell.json"
+    $powershellSnippets = @{
+        "Function Template" = @{
+            "prefix" = "func"
+            "body" = @(
+                "function ${1:FunctionName} {",
+                "    param(",
+                "        [Parameter(Mandatory=`$true)]",
+                "        [string]`${2:ParameterName}",
+                "    )",
+                "    ",
+                "    ${3:# Function body}",
+                "}"
+            )
+            "description" = "PowerShell function template"
+        }
+        "Try-Catch Block" = @{
+            "prefix" = "try"
+            "body" = @(
+                "try {",
+                "    ${1:# Code that might throw an exception}",
+                "}",
+                "catch {",
+                "    Write-Error `"Error: `$_`"",
+                "    ${2:# Error handling}",
+                "}"
+            )
+            "description" = "PowerShell try-catch block"
+        }
+    }
+
+    try {
+        $jsonPowerShellSnippets = $powershellSnippets | ConvertTo-Json -Depth 5
+        $jsonPowerShellSnippets | Out-File -FilePath $powershellSnippetsPath -Encoding UTF8 -Force
+        Write-Host "✓ PowerShell snippets created" -ForegroundColor Green
+    } catch {
+        Write-Warning "Failed to create PowerShell snippets: $_"
+    }
+
+    Write-Host ""
+    Write-Host "✅ VS Code installation and configuration completed!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Configuration includes:" -ForegroundColor Cyan
+    Write-Host "  ✓ $($installedExtensions.Count) essential extensions installed" -ForegroundColor White
+    Write-Host "  ✓ Optimized settings for development workflow" -ForegroundColor White
+    Write-Host "  ✓ Modern theme and icon pack (One Dark Pro + Material Icons)" -ForegroundColor White
+    Write-Host "  ✓ Font ligatures support (JetBrains Mono, Fira Code)" -ForegroundColor White
+    Write-Host "  ✓ Auto-formatting and code quality settings" -ForegroundColor White
+    Write-Host "  ✓ Git integration with GitLens" -ForegroundColor White
+    Write-Host "  ✓ PowerShell, Python, C#, TypeScript language support" -ForegroundColor White
+    Write-Host "  ✓ Docker and remote development capabilities" -ForegroundColor White
+    Write-Host "  ✓ Custom keybindings and snippets" -ForegroundColor White
+    Write-Host "  ✓ Performance optimizations" -ForegroundColor White
+    Write-Host ""
+    Write-Host "VS Code is ready for development!" -ForegroundColor Green
+}
+
 # -------------------- Main execution --------------------
 try {
     # Step 1: Install Chocolatey
@@ -1714,7 +2553,10 @@ try {
     # Step 14: Install programming languaches and runtimes
     Install-ProgrammingLanguages
 
-    # Step 15: Install C++
+    # Step 15: Install TotalCMD
+    Install-ConfigureTotalCommander
+
+    # Step 17: Install C++
     Install-VisualStudioCppTools
 
     Write-Host "`nAll done! Your system is now configured." -ForegroundColor Green
