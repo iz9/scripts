@@ -2556,6 +2556,9 @@ try {
     # Step 15: Install TotalCMD
     Install-ConfigureTotalCommander
 
+    # Step 16: Install VSCode
+    Install-ConfigureVSCode
+
     # Step 17: Install C++
     Install-VisualStudioCppTools
 
