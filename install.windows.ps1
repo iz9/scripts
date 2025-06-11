@@ -1759,7 +1759,7 @@ function Install-ConfigureTotalCommander {
 
             $newContent | Out-File -FilePath $FilePath -Encoding UTF8 -Force
         } catch {
-            Write-Warning "Failed to set $Section/$Key in $FilePath: $_"
+            Write-Warning "Failed to set ${Section}/${Key} in ${FilePath}: $_"
         }
     }
 
@@ -2235,7 +2235,7 @@ function Install-ConfigureVSCode {
                 "${env:windir}\\Sysnative\\cmd.exe",
                 "${env:windir}\\System32\\cmd.exe"
                 )
-                "args" = []
+                "args" = $()
                 "icon" = "terminal-cmd"
             }
             "Git Bash" = @{
