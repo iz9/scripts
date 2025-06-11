@@ -148,8 +148,7 @@ function Install-ChocolateyTools {
         "tree",
         "ncdu",
         "httpie",
-        "duf",
-        "visualstudio2022buildtools"
+        "duf"
     )
 
     foreach ($tool in $chocoTools) {
@@ -1557,6 +1556,109 @@ function Install-ProgrammingLanguages {
     Write-Host "Note: You may need to restart your terminal for PATH changes to take effect." -ForegroundColor Cyan
 }
 
+# -------------------- Install Visual Studio Build Tools with C++ --------------------
+function Install-VisualStudioCppTools {
+    Write-Host "`nStep 15: Installing Visual Studio Build Tools with C++ support..." -ForegroundColor Yellow
+
+    # Check if Visual Studio Installer exists
+    $vsInstallerPath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"
+
+    if (-not (Test-Path $vsInstallerPath)) {
+        Write-Host "Visual Studio Installer not found. Installing Visual Studio Build Tools first..." -ForegroundColor Cyan
+        choco install visualstudio2022buildtools -y
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Failed to install Visual Studio Build Tools via Chocolatey"
+            return
+        }
+
+        # Refresh environment variables
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+        Write-Host "Visual Studio Build Tools installed successfully!" -ForegroundColor Green
+    } else {
+        Write-Host "Visual Studio Installer already exists." -ForegroundColor Green
+    }
+
+    Write-Host "`nOpening Visual Studio Installer to install Desktop development with C++..." -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "IMPORTANT INSTRUCTIONS:" -ForegroundColor Yellow
+    Write-Host "1. The Visual Studio Installer will open shortly" -ForegroundColor White
+    Write-Host "2. Look for 'Visual Studio Build Tools 2022' in the installer" -ForegroundColor White
+    Write-Host "3. Click 'Modify' if already installed, or 'Install' if not installed" -ForegroundColor White
+    Write-Host "4. In the workloads tab, check 'Desktop development with C++'" -ForegroundColor White
+    Write-Host "5. Click 'Install' or 'Modify' to begin installation" -ForegroundColor White
+    Write-Host "6. Wait for the installation to complete" -ForegroundColor White
+    Write-Host "7. Come back to this PowerShell window and press Enter when done" -ForegroundColor White
+    Write-Host ""
+
+    Read-Host "Press <Enter> to open Visual Studio Installer"
+
+    try {
+        Start-Process -FilePath $vsInstallerPath -Wait:$false
+        Write-Host "Visual Studio Installer opened." -ForegroundColor Green
+    } catch {
+        Write-Warning "Failed to open Visual Studio Installer: $_"
+        Write-Host "Please manually open: $vsInstallerPath" -ForegroundColor Yellow
+    }
+
+    Write-Host ""
+    Write-Host "Please complete the C++ workload installation in Visual Studio Installer..." -ForegroundColor Cyan
+    $userInput = Read-Host "Press <Enter> when you have finished installing 'Desktop development with C++'"
+
+    Write-Host ""
+    Write-Host "Adding Visual Studio C++ tools to system PATH..." -ForegroundColor Cyan
+
+    # Add Visual Studio C++ tools to PATH
+    $vcToolsPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64"
+
+    # Check if the specific version path exists, if not, try to find the latest version
+    if (-not (Test-Path $vcToolsPath)) {
+        Write-Host "Specific MSVC version path not found. Searching for latest version..." -ForegroundColor Yellow
+
+        $msvcBasePath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC"
+        if (Test-Path $msvcBasePath) {
+            $latestVersion = Get-ChildItem $msvcBasePath | Sort-Object Name -Descending | Select-Object -First 1
+            if ($latestVersion) {
+                $vcToolsPath = Join-Path $latestVersion.FullName "bin\Hostx64\x64"
+                Write-Host "Found latest MSVC version: $($latestVersion.Name)" -ForegroundColor Green
+            }
+        }
+    }
+
+    if (Test-Path $vcToolsPath) {
+        try {
+            # Get current system PATH
+            $currentPath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+
+            # Check if the path is already in PATH
+            if ($currentPath -notlike "*$vcToolsPath*") {
+                $newPath = $currentPath + ";" + $vcToolsPath
+                [System.Environment]::SetEnvironmentVariable("Path", $newPath, "Machine")
+
+                # Also update current session PATH
+                $env:Path = $env:Path + ";" + $vcToolsPath
+
+                Write-Host "✅ Visual Studio C++ tools added to system PATH successfully!" -ForegroundColor Green
+                Write-Host "   Path added: $vcToolsPath" -ForegroundColor Gray
+            } else {
+                Write-Host "Visual Studio C++ tools path already exists in system PATH." -ForegroundColor Gray
+            }
+        } catch {
+            Write-Warning "Failed to add Visual Studio C++ tools to PATH: $_"
+            Write-Host "You may need to add this path manually: $vcToolsPath" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Warning "Visual Studio C++ tools directory not found at: $vcToolsPath"
+        Write-Host "Please verify the C++ workload was installed correctly." -ForegroundColor Yellow
+        Write-Host "You may need to manually add the MSVC tools to your PATH." -ForegroundColor Yellow
+    }
+
+    Write-Host ""
+    Write-Host "Visual Studio C++ tools installation completed!" -ForegroundColor Green
+    Write-Host "Note: You may need to restart PowerShell for PATH changes to take effect." -ForegroundColor Cyan
+}
+
 # -------------------- Main execution --------------------
 try {
     # Step 1: Install Chocolatey
@@ -1611,6 +1713,9 @@ try {
 
     # Step 14: Install programming languaches and runtimes
     Install-ProgrammingLanguages
+
+    # Step 15: Install C++
+    Install-VisualStudioCppTools
 
     Write-Host "`nAll done! Your system is now configured." -ForegroundColor Green
     Write-Host "Installed software:" -ForegroundColor Cyan
