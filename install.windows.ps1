@@ -1966,59 +1966,45 @@ function Install-ConfigureTotalCommander {
     Write-Host "Note: Please restart Total Commander to apply all changes." -ForegroundColor Yellow
 }
 
+# -------------------- Install and Configure VSCode --------------------
+function Install-VSCode {
+    Write-Host "`nStep 16: Installing and configuring Visual Studio Code..." -ForegroundColor Yellow
 
-# -------------------- Install and Configure Visual Studio Code --------------------
-function Install-ConfigureVSCode {
-    Write-Host "`nStep X: Installing and configuring Visual Studio Code..." -ForegroundColor Yellow
-
-    # Install VS Code via Chocolatey
+    # Install VSCode
     Write-Host "Installing Visual Studio Code..." -ForegroundColor Cyan
     choco install vscode -y
 
     if ($LASTEXITCODE -ne 0) {
-        Write-Warning "Failed to install VS Code via Chocolatey"
+        Write-Warning "VSCode installation may have encountered issues."
         return
     }
 
-    Write-Host "Visual Studio Code installed successfully!" -ForegroundColor Green
+    Write-Host "✅ VSCode installed successfully!" -ForegroundColor Green
 
     # Refresh environment variables
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
-    # Wait a moment for installation to complete
+    # Wait for VSCode to be available
+    Write-Host "Waiting for VSCode to be available..." -ForegroundColor Cyan
     Start-Sleep -Seconds 5
-
-    # Verify VS Code installation
-    if (-not (Get-Command code -ErrorAction SilentlyContinue)) {
-        Write-Warning "VS Code 'code' command not found in PATH. Please restart PowerShell and try again."
-        return
-    }
-
-    Write-Host "Configuring VS Code settings and extensions..." -ForegroundColor Cyan
-
-    # VS Code settings directory
-    $vscodeSettingsDir = "$env:APPDATA\Code\User"
-    if (-not (Test-Path $vscodeSettingsDir)) {
-        New-Item -ItemType Directory -Path $vscodeSettingsDir -Force | Out-Null
-        Write-Host "Created VS Code settings directory: $vscodeSettingsDir" -ForegroundColor Gray
-    }
 
     # ==================== INSTALL ESSENTIAL EXTENSIONS ====================
     Write-Host "Installing essential VS Code extensions..." -ForegroundColor Cyan
 
     $essentialExtensions = @(
-    # Language Support
+    # Vim Extension (priority)
+        "vscodevim.vim",                      # Vim
+
+        # Language Support
         "ms-python.python",                    # Python
         "ms-vscode.powershell",               # PowerShell
         "ms-dotnettools.csharp",              # C#
         "ms-vscode.vscode-typescript-next",   # TypeScript
         "bradlc.vscode-tailwindcss",          # Tailwind CSS
         "esbenp.prettier-vscode",             # Prettier
-        "ms-vscode.vscode-json",              # JSON
 
         # Web Development
         "formulahendry.auto-rename-tag",      # Auto Rename Tag
-        "bradlc.vscode-tailwindcss",          # Tailwind CSS
         "ms-vscode.live-server",              # Live Server
         "ritwickdey.liveserver",              # Live Server (alternative)
 
@@ -2040,7 +2026,6 @@ function Install-ConfigureVSCode {
         "alefragnani.project-manager",        # Project Manager
         "alefragnani.bookmarks",              # Bookmarks
         "christian-kohler.path-intellisense", # Path Intellisense
-        "ms-vscode.vscode-json",              # JSON Tools
 
         # Themes & Icons
         "pkief.material-icon-theme",          # Material Icon Theme
@@ -2060,352 +2045,230 @@ function Install-ConfigureVSCode {
         "humao.rest-client",                  # REST Client
         "ms-vscode.hexeditor",                # Hex Editor
         "redhat.vscode-yaml",                 # YAML
-        "ms-vscode.vscode-json",              # JSON
-        "formulahendry.auto-close-tag",       # Auto Close Tag
-
-        # AI & IntelliSense
-        "github.copilot",                     # GitHub Copilot (if available)
-        "ms-vscode.vscode-ai",                # VS Code AI (if available)
-        "tabnine.tabnine-vscode"              # Tabnine AI
+        "formulahendry.auto-close-tag"       # Auto Close Tag
     )
 
-    $installedExtensions = @()
-    $failedExtensions = @()
+    # Install extensions with progress tracking
+    $totalExtensions = $essentialExtensions.Count
+    $currentExtension = 0
 
     foreach ($extension in $essentialExtensions) {
-        Write-Host "  Installing $extension..." -ForegroundColor Gray
+        $currentExtension++
+        $percentComplete = [math]::Round(($currentExtension / $totalExtensions) * 100)
+
+        Write-Host "[$currentExtension/$totalExtensions] Installing $extension... ($percentComplete%)" -ForegroundColor Yellow
+
         try {
             $result = & code --install-extension $extension --force 2>&1
             if ($LASTEXITCODE -eq 0) {
-                $installedExtensions += $extension
-                Write-Host "    ✓ $extension" -ForegroundColor Green
+                Write-Host "  ✅ $extension installed successfully" -ForegroundColor Green
             } else {
-                $failedExtensions += $extension
-                Write-Host "    ✗ $extension (Error: $result)" -ForegroundColor Red
+                Write-Warning "  ⚠️  $extension installation may have issues: $result"
             }
         } catch {
-            $failedExtensions += $extension
-            Write-Host "    ✗ $extension (Exception: $_)" -ForegroundColor Red
+            Write-Warning "  ❌ Failed to install ${extension}: $_"
         }
-        Start-Sleep -Milliseconds 500  # Brief pause between installations
+
+        # Small delay to prevent overwhelming the system
+        Start-Sleep -Milliseconds 500
     }
 
     Write-Host ""
-    Write-Host "Extension installation summary:" -ForegroundColor Cyan
-    Write-Host "  ✓ Installed: $($installedExtensions.Count)" -ForegroundColor Green
-    Write-Host "  ✗ Failed: $($failedExtensions.Count)" -ForegroundColor Red
+    Write-Host "✅ Extension installation completed!" -ForegroundColor Green
 
-    if ($failedExtensions.Count -gt 0) {
-        Write-Host "Failed extensions:" -ForegroundColor Yellow
-        $failedExtensions | ForEach-Object { Write-Host "    - $_" -ForegroundColor Gray }
+    # ==================== CONFIGURE VSCODE SETTINGS ====================
+    Write-Host "Configuring VSCode settings..." -ForegroundColor Cyan
+
+    # VSCode settings path
+    $vscodeDir = Join-Path $env:APPDATA "Code\User"
+    if (-not (Test-Path $vscodeDir)) {
+        New-Item -ItemType Directory -Path $vscodeDir -Force | Out-Null
     }
 
-    # ==================== CREATE SETTINGS.JSON ====================
-    Write-Host "Creating VS Code settings.json..." -ForegroundColor Cyan
+    $settingsPath = Join-Path $vscodeDir "settings.json"
+    $keybindingsPath = Join-Path $vscodeDir "keybindings.json"
 
-    $settingsPath = Join-Path $vscodeSettingsDir "settings.json"
+    # Create or update settings.json with Vim configuration
+    $vimSettings = @{
+    # Enable Vim extension
+        "vim.easymotion" = $true
+        "vim.incsearch" = $true
+        "vim.useSystemClipboard" = $true
+        "vim.useCtrlKeys" = $true
+        "vim.hlsearch" = $true
+        "vim.insertModeKeyBindings" = @()
+        "vim.normalModeKeyBindingsNonRecursive" = @(
+            @{
+                "before" = @("``", "``")
+                "commands" = @("workbench.action.terminal.toggleTerminal")
+            },
+            @{
+                "before" = @("leader", "e")
+                "commands" = @("workbench.view.explorer")
+            },
+            @{
+                "before" = @("leader", "f")
+                "commands" = @("workbench.action.quickOpen")
+            },
+            @{
+                "before" = @("leader", "g")
+                "commands" = @("workbench.action.findInFiles")
+            },
+            @{
+                "before" = @("leader", "s")
+                "commands" = @("workbench.action.files.save")
+            },
+            @{
+                "before" = @("leader", "w")
+                "commands" = @("workbench.action.closeActiveEditor")
+            },
+            @{
+                "before" = @("leader", "q")
+                "commands" = @("workbench.action.closeWindow")
+            },
+            @{
+                "before" = @("g", "h")
+                "commands" = @("editor.action.showHover")
+            },
+            @{
+                "before" = @("g", "d")
+                "commands" = @("editor.action.revealDefinition")
+            },
+            @{
+                "before" = @("g", "r")
+                "commands" = @("editor.action.goToReferences")
+            },
+            @{
+                "before" = @("leader", "t")
+                "commands" = @("gruntfuggly.todo-tree.show")
+            },
+            @{
+                "before" = @("leader", "b")
+                "commands" = @("alefragnani.bookmarks.toggle")
+            }
+        )
+        "vim.leader" = " "
+        "vim.handleKeys" = @{
+            "<C-a>" = $false
+            "<C-f>" = $false
+            "<C-c>" = $false
+            "<C-v>" = $false
+            "<C-x>" = $false
+            "<C-z>" = $false
+            "<C-y>" = $false
+        }
+        "vim.visualModeKeyBindingsNonRecursive" = @(
+            @{
+                "before" = @("leader", "c")
+                "commands" = @("editor.action.commentLine")
+            }
+        )
 
-    $vscodeSettings = @{
-        # ==================== GENERAL SETTINGS ====================
-        "workbench.startupEditor" = "newUntitledFile"
-        "workbench.colorTheme" = "One Dark Pro"
-        "workbench.iconTheme" = "material-icon-theme"
-        "workbench.tree.indent" = 16
-        "workbench.list.smoothScrolling" = $true
-        "workbench.editor.enablePreview" = $false
-        "workbench.editor.closeOnFileDelete" = $true
-        "workbench.commandPalette.history" = 50
-
-        # ==================== EDITOR SETTINGS ====================
+        # Editor settings that complement Vim
+        "editor.lineNumbers" = "relative"
+        "editor.cursorBlinking" = "solid"
+        "editor.scrollBeyondLastLine" = $false
+        "editor.minimap.enabled" = $false
+        "editor.wordWrap" = "off"
+        "editor.rulers" = @(80, 120)
+        "editor.fontFamily" = "JetBrains Mono, Consolas, 'Courier New', monospace"
         "editor.fontSize" = 14
-        "editor.fontFamily" = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace"
         "editor.fontLigatures" = $true
-        "editor.lineHeight" = 1.6
-        "editor.cursorBlinking" = "smooth"
-        "editor.cursorSmoothCaretAnimation" = "on"
-        "editor.smoothScrolling" = $true
-        "editor.mouseWheelScrollSensitivity" = 1
-        "editor.fastScrollSensitivity" = 5
-
-        # Indentation & Formatting
         "editor.tabSize" = 4
         "editor.insertSpaces" = $true
-        "editor.detectIndentation" = $true
+        "editor.renderWhitespace" = "boundary"
         "editor.formatOnSave" = $true
         "editor.formatOnPaste" = $true
-        "editor.formatOnType" = $false
-        "editor.trimAutoWhitespace" = $true
-        "files.trimTrailingWhitespace" = $true
-        "files.insertFinalNewline" = $true
-        "files.trimFinalNewlines" = $true
 
-        # IntelliSense & Suggestions
-        "editor.suggestSelection" = "first"
-        "editor.acceptSuggestionOnCommitCharacter" = $true
-        "editor.acceptSuggestionOnEnter" = "on"
-        "editor.wordBasedSuggestions" = "matchingDocuments"
-        "editor.quickSuggestions" = @{
-            "other" = $true
-            "comments" = $false
-            "strings" = $false
-        }
+        # Workbench settings
+        "workbench.colorTheme" = "One Dark Pro"
+        "workbench.iconTheme" = "material-icon-theme"
+        "workbench.startupEditor" = "none"
+        "workbench.editor.enablePreview" = $false
+        "workbench.editor.showTabs" = $true
 
-        # Code Display
-        "editor.renderWhitespace" = "boundary"
-        "editor.renderControlCharacters" = $false
-        "editor.renderLineHighlight" = "all"
-        "editor.showFoldingControls" = "mouseover"
-        "editor.foldingStrategy" = "auto"
-        "editor.bracketPairColorization.enabled" = $true
-        "editor.guides.bracketPairs" = $true
-        "editor.guides.bracketPairsHorizontal" = $true
-        "editor.guides.indentation" = $true
+        # Terminal settings
+        "terminal.integrated.fontFamily" = "JetBrains Mono"
+        "terminal.integrated.fontSize" = 12
+        "terminal.integrated.shell.windows" = "powershell.exe"
 
-        # Minimap
-        "editor.minimap.enabled" = $true
-        "editor.minimap.renderCharacters" = $false
-        "editor.minimap.showSlider" = "always"
-        "editor.minimap.side" = "right"
+        # File explorer
+        "explorer.confirmDelete" = $false
+        "explorer.confirmDragAndDrop" = $false
 
-        # ==================== FILE SETTINGS ====================
-        "files.autoSave" = "afterDelay"
-        "files.autoSaveDelay" = 1000
-        "files.encoding" = "utf8"
-        "files.eol" = "`n"
-        "files.hotExit" = "onExit"
+        # Extensions configuration
+        "extensions.autoUpdate" = $true
 
-        # File Associations
-        "files.associations" = @{
-            "*.ps1" = "powershell"
-            "*.psm1" = "powershell"
-            "*.psd1" = "powershell"
-            "*.json" = "jsonc"
-            "*.jsonc" = "jsonc"
-            ".gitignore" = "ignore"
-            ".gitattributes" = "gitattributes"
-            "Dockerfile*" = "dockerfile"
-            "*.yml" = "yaml"
-            "*.yaml" = "yaml"
-        }
+        # GitLens configuration
+        "gitlens.mode.active" = "zen"
+        "gitlens.hovers.currentLine.over" = "line"
+        "gitlens.currentLine.enabled" = $true
 
-        # Exclude patterns
-        "files.exclude" = @{
-            "**/.git" = $true
-            "**/.svn" = $true
-            "**/.hg" = $true
-            "**/CVS" = $true
-            "**/.DS_Store" = $true
-            "**/.vscode" = $false
-            "**/node_modules" = $true
-            "**/bower_components" = $true
-            "**/.nyc_output" = $true
-            "**/coverage" = $true
-            "**/.pytest_cache" = $true
-            "**/__pycache__" = $true
-            "**/*.pyc" = $true
-            "**/bin" = $true
-            "**/obj" = $true
-        }
+        # TODO Tree configuration
+        "todo-tree.general.tags" = @("BUG", "HACK", "FIXME", "TODO", "XXX", "[ ]", "[x]")
+        "todo-tree.regex.regex" = "((//|#|<!--|;|/\*|^)\s*(`$TAGS)|^\s*- \[ \])"
 
-        # ==================== SEARCH SETTINGS ====================
+        # Better Comments configuration
+        "better-comments.multilineComments" = $true
+        "better-comments.highlightPlainText" = $false
+
+        # Prettier configuration
+        "prettier.singleQuote" = $true
+        "prettier.semi" = $false
+        "prettier.tabWidth" = 2
+
+        # Search
         "search.exclude" = @{
             "**/node_modules" = $true
             "**/bower_components" = $true
-            "**/*.code-search" = $true
             "**/.git" = $true
-            "**/coverage" = $true
+            "**/.DS_Store" = $true
             "**/dist" = $true
             "**/build" = $true
-            "**/.nyc_output" = $true
-            "**/.pytest_cache" = $true
-            "**/__pycache__" = $true
         }
-        "search.smartCase" = $true
-        "search.useIgnoreFiles" = $true
 
-        # ==================== TERMINAL SETTINGS ====================
-        "terminal.integrated.defaultProfile.windows" = "PowerShell"
-        "terminal.integrated.profiles.windows" = @{
-            "PowerShell" = @{
-                "source" = "PowerShell"
-                "icon" = "terminal-powershell"
-            }
-            "Command Prompt" = @{
-                "path" = @(
-                "${env:windir}\\Sysnative\\cmd.exe",
-                "${env:windir}\\System32\\cmd.exe"
-                )
-                "args" = $()
-                "icon" = "terminal-cmd"
-            }
-            "Git Bash" = @{
-                "source" = "Git Bash"
-            }
+        # Files
+        "files.autoSave" = "onFocusChange"
+        "files.trimTrailingWhitespace" = $true
+        "files.insertFinalNewline" = $true
+
+        # Language specific settings
+        "[python]" = @{
+            "editor.defaultFormatter" = "ms-python.python"
+            "editor.tabSize" = 4
         }
-        "terminal.integrated.fontSize" = 13
-        "terminal.integrated.fontFamily" = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas"
-        "terminal.integrated.cursorBlinking" = $true
-        "terminal.integrated.cursorStyle" = "block"
-        "terminal.integrated.scrollback" = 10000
-
-        # ==================== GIT SETTINGS ====================
-        "git.enableSmartCommit" = $true
-        "git.confirmSync" = $false
-        "git.autofetch" = $true
-        "git.autoStash" = $true
-        "git.enableStatusBarSync" = $true
-        "git.decorations.enabled" = $true
-
-        # ==================== LANGUAGE-SPECIFIC SETTINGS ====================
-        # PowerShell
-        "powershell.codeFormatting.preset" = "OTBS"
-        "powershell.integratedConsole.showOnStartup" = $false
-
-        # Python
-        "python.defaultInterpreterPath" = "python"
-        "python.formatting.provider" = "black"
-        "python.linting.enabled" = $true
-        "python.linting.pylintEnabled" = $false
-        "python.linting.flake8Enabled" = $true
-
-        # JavaScript/TypeScript
-        "javascript.updateImportsOnFileMove.enabled" = "always"
-        "typescript.updateImportsOnFileMove.enabled" = "always"
-        "javascript.suggest.autoImports" = $true
-        "typescript.suggest.autoImports" = $true
-
-        # JSON
-        "json.format.enable" = $true
-        "json.format.keepLines" = $false
-
-        # ==================== EXTENSION SETTINGS ====================
-        # GitLens
-        "gitlens.codeLens.enabled" = $true
-        "gitlens.currentLine.enabled" = $true
-        "gitlens.hovers.enabled" = $true
-
-        # Live Server
-        "liveServer.settings.donotShowInfoMsg" = $true
-        "liveServer.settings.donotVerifyTags" = $true
-
-        # TODO Tree
-        "todo-tree.general.tags" = @(
-            "BUG", "HACK", "FIXME", "TODO", "XXX", "[ ]", "[x]"
-        )
-        "todo-tree.regex.regex" = "((//|#|<!--|;|/\*|^)\s*($TAGS)|^\s*- \[ \])"
-
-        # Better Comments
-        "better-comments.tags" = @(
-            @{
-                "tag" = "!"
-                "color" = "#FF2D00"
-                "strikethrough" = $false
-                "underline" = $false
-                "backgroundColor" = "transparent"
-                "bold" = $false
-                "italic" = $false
-            },
-            @{
-                "tag" = "?"
-                "color" = "#3498DB"
-                "strikethrough" = $false
-                "underline" = $false
-                "backgroundColor" = "transparent"
-                "bold" = $false
-                "italic" = $false
-            },
-            @{
-                "tag" = "//"
-                "color" = "#474747"
-                "strikethrough" = $true
-                "underline" = $false
-                "backgroundColor" = "transparent"
-                "bold" = $false
-                "italic" = $false
-            },
-            @{
-                "tag" = "todo"
-                "color" = "#FF8C00"
-                "strikethrough" = $false
-                "underline" = $false
-                "backgroundColor" = "transparent"
-                "bold" = $false
-                "italic" = $false
-            },
-            @{
-                "tag" = "*"
-                "color" = "#98C379"
-                "strikethrough" = $false
-                "underline" = $false
-                "backgroundColor" = "transparent"
-                "bold" = $false
-                "italic" = $false
-            }
-        )
-
-        # Auto Close Tag
-        "auto-close-tag.activationOnLanguage" = @(
-            "xml", "php", "blade", "ejs", "jinja", "javascript", "javascriptreact",
-            "typescript", "typescriptreact", "plaintext", "markdown", "vue",
-            "liquid", "erb", "lang-cfml", "cfml", "HTML (EEx)", "HTML (Eex)",
-            "plist"
-        )
-
-        # ==================== SECURITY & PRIVACY ====================
-        "telemetry.telemetryLevel" = "off"
-        "update.showReleaseNotes" = $false
-        "extensions.autoCheckUpdates" = $true
-        "extensions.autoUpdate" = $true
-
-        # ==================== PERFORMANCE ====================
-        "extensions.ignoreRecommendations" = $false
-        "workbench.reduceMotion" = "auto"
-        "workbench.enableExperiments" = $false
+        "[javascript]" = @{
+            "editor.defaultFormatter" = "esbenp.prettier-vscode"
+            "editor.tabSize" = 2
+        }
+        "[typescript]" = @{
+            "editor.defaultFormatter" = "esbenp.prettier-vscode"
+            "editor.tabSize" = 2
+        }
+        "[json]" = @{
+            "editor.defaultFormatter" = "esbenp.prettier-vscode"
+            "editor.tabSize" = 2
+        }
+        "[html]" = @{
+            "editor.defaultFormatter" = "esbenp.prettier-vscode"
+            "editor.tabSize" = 2
+        }
+        "[css]" = @{
+            "editor.defaultFormatter" = "esbenp.prettier-vscode"
+            "editor.tabSize" = 2
+        }
+        "[powershell]" = @{
+            "editor.tabSize" = 4
+        }
     }
 
-    # Convert to JSON and save
-    try {
-        $jsonSettings = $vscodeSettings | ConvertTo-Json -Depth 10
-        $jsonSettings | Out-File -FilePath $settingsPath -Encoding UTF8 -Force
-        Write-Host "✓ VS Code settings.json created successfully" -ForegroundColor Green
-    } catch {
-        Write-Warning "Failed to create settings.json: $_"
-    }
+    # Convert to JSON and write
+    $jsonSettings = $vimSettings | ConvertTo-Json -Depth 10
+    $jsonSettings | Out-File -FilePath $settingsPath -Encoding UTF8 -Force
+    Write-Host "✅ VSCode settings configured at: $settingsPath" -ForegroundColor Green
 
-    # ==================== CREATE KEYBINDINGS.JSON ====================
-    Write-Host "Creating VS Code keybindings.json..." -ForegroundColor Cyan
-
-    $keybindingsPath = Join-Path $vscodeSettingsDir "keybindings.json"
-
+    # Create keybindings.json for additional shortcuts
     $keybindings = @(
-        @{
-            "key" = "ctrl+shift+alt+f"
-            "command" = "editor.action.formatDocument"
-        },
-        @{
-            "key" = "ctrl+k ctrl+d"
-            "command" = "editor.action.formatDocument"
-        },
-        @{
-            "key" = "ctrl+shift+p"
-            "command" = "workbench.action.showCommands"
-        },
-        @{
-            "key" = "ctrl+shift+e"
-            "command" = "workbench.view.explorer"
-        },
-        @{
-            "key" = "ctrl+shift+g"
-            "command" = "workbench.view.scm"
-        },
-        @{
-            "key" = "ctrl+shift+d"
-            "command" = "workbench.view.debug"
-        },
-        @{
-            "key" = "ctrl+shift+x"
-            "command" = "workbench.view.extensions"
-        },
         @{
             "key" = "ctrl+``"
             "command" = "workbench.action.terminal.toggleTerminal"
@@ -2415,87 +2278,48 @@ function Install-ConfigureVSCode {
             "command" = "workbench.action.terminal.new"
         },
         @{
-            "key" = "ctrl+w"
-            "command" = "workbench.action.closeActiveEditor"
+            "key" = "ctrl+shift+e"
+            "command" = "workbench.view.explorer"
+            "when" = "!terminalFocus"
         },
         @{
-            "key" = "ctrl+shift+t"
-            "command" = "workbench.action.reopenClosedEditor"
+            "key" = "ctrl+p"
+            "command" = "workbench.action.quickOpen"
+            "when" = "!terminalFocus"
+        },
+        @{
+            "key" = "ctrl+shift+f"
+            "command" = "workbench.action.findInFiles"
+            "when" = "!terminalFocus"
+        },
+        @{
+            "key" = "ctrl+shift+g"
+            "command" = "workbench.view.scm"
+            "when" = "!terminalFocus"
         }
     )
 
-    try {
-        $jsonKeybindings = $keybindings | ConvertTo-Json -Depth 5
-        $jsonKeybindings | Out-File -FilePath $keybindingsPath -Encoding UTF8 -Force
-        Write-Host "✓ VS Code keybindings.json created successfully" -ForegroundColor Green
-    } catch {
-        Write-Warning "Failed to create keybindings.json: $_"
-    }
-
-    # ==================== CREATE SNIPPETS ====================
-    Write-Host "Creating custom snippets..." -ForegroundColor Cyan
-
-    $snippetsDir = Join-Path $vscodeSettingsDir "snippets"
-    if (-not (Test-Path $snippetsDir)) {
-        New-Item -ItemType Directory -Path $snippetsDir -Force | Out-Null
-    }
-
-    # PowerShell snippets
-    $powershellSnippetsPath = Join-Path $snippetsDir "powershell.json"
-    $powershellSnippets = @{
-        "Function Template" = @{
-            "prefix" = "func"
-            "body" = @(
-                "function ${1:FunctionName} {",
-                "    param(",
-                "        [Parameter(Mandatory=`$true)]",
-                "        [string]`${2:ParameterName}",
-                "    )",
-                "    ",
-                "    ${3:# Function body}",
-                "}"
-            )
-            "description" = "PowerShell function template"
-        }
-        "Try-Catch Block" = @{
-            "prefix" = "try"
-            "body" = @(
-                "try {",
-                "    ${1:# Code that might throw an exception}",
-                "}",
-                "catch {",
-                "    Write-Error `"Error: `$_`"",
-                "    ${2:# Error handling}",
-                "}"
-            )
-            "description" = "PowerShell try-catch block"
-        }
-    }
-
-    try {
-        $jsonPowerShellSnippets = $powershellSnippets | ConvertTo-Json -Depth 5
-        $jsonPowerShellSnippets | Out-File -FilePath $powershellSnippetsPath -Encoding UTF8 -Force
-        Write-Host "✓ PowerShell snippets created" -ForegroundColor Green
-    } catch {
-        Write-Warning "Failed to create PowerShell snippets: $_"
-    }
+    $jsonKeybindings = $keybindings | ConvertTo-Json -Depth 5
+    $jsonKeybindings | Out-File -FilePath $keybindingsPath -Encoding UTF8 -Force
+    Write-Host "✅ VSCode keybindings configured at: $keybindingsPath" -ForegroundColor Green
 
     Write-Host ""
-    Write-Host "✅ VS Code installation and configuration completed!" -ForegroundColor Green
+    Write-Host "VSCode Configuration Summary:" -ForegroundColor Cyan
+    Write-Host "  Extensions installed: $totalExtensions" -ForegroundColor White
+    Write-Host "  Theme: One Dark Pro" -ForegroundColor White
+    Write-Host "  Icons: Material Icon Theme" -ForegroundColor White
+    Write-Host "  Leader key: Space" -ForegroundColor White
+    Write-Host "  Terminal toggle: `` or Ctrl+``" -ForegroundColor White
+    Write-Host "  File explorer: <leader>e" -ForegroundColor White
+    Write-Host "  Quick open: <leader>f or Ctrl+P" -ForegroundColor White
+    Write-Host "  Search in files: <leader>g" -ForegroundColor White
+    Write-Host "  TODO Tree: <leader>t" -ForegroundColor White
+    Write-Host "  Bookmarks: <leader>b" -ForegroundColor White
+    Write-Host "  Relative line numbers enabled" -ForegroundColor White
+    Write-Host "  JetBrains Mono font configured" -ForegroundColor White
     Write-Host ""
-    Write-Host "Configuration includes:" -ForegroundColor Cyan
-    Write-Host "  ✓ $($installedExtensions.Count) essential extensions installed" -ForegroundColor White
-    Write-Host "  ✓ Optimized settings for development workflow" -ForegroundColor White
-    Write-Host "  ✓ Modern theme and icon pack (One Dark Pro + Material Icons)" -ForegroundColor White
-    Write-Host "  ✓ Font ligatures support (JetBrains Mono, Fira Code)" -ForegroundColor White
-    Write-Host "  ✓ Auto-formatting and code quality settings" -ForegroundColor White
-    Write-Host "  ✓ Git integration with GitLens" -ForegroundColor White
-    Write-Host "  ✓ PowerShell, Python, C#, TypeScript language support" -ForegroundColor White
-    Write-Host "  ✓ Docker and remote development capabilities" -ForegroundColor White
-    Write-Host "  ✓ Custom keybindings and snippets" -ForegroundColor White
-    Write-Host "  ✓ Performance optimizations" -ForegroundColor White
-    Write-Host ""
-    Write-Host "VS Code is ready for development!" -ForegroundColor Green
+    Write-Host "🔄 Please restart VSCode to activate all extensions and settings" -ForegroundColor Yellow
+    Write-Host "VSCode installation and configuration completed!" -ForegroundColor Green
 }
 
 # -------------------- Main execution --------------------
@@ -2557,7 +2381,7 @@ try {
     Install-ConfigureTotalCommander
 
     # Step 16: Install VSCode
-    Install-ConfigureVSCode
+    Install-VSCode
 
     # Step 17: Install C++
     Install-VisualStudioCppTools
