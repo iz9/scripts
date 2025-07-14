@@ -22,7 +22,8 @@ if (-not $scoopInstalled) {
         Write-Host "Please install Scoop first, then run this script again." -ForegroundColor Yellow
         exit 1
     }
-} else {
+}
+else {
     Write-Host "✅ Scoop is already installed!" -ForegroundColor Green
     Write-Host ""
 }
@@ -42,7 +43,7 @@ function Install-Chocolatey {
     iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
     # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
     Write-Host "Chocolatey installed successfully!" -ForegroundColor Green
 }
@@ -62,21 +63,24 @@ function Configure-Scoop {
     try {
         scoop bucket add extras
         Write-Host "✅ Added 'extras' bucket" -ForegroundColor Green
-    } catch {
+    }
+    catch {
         Write-Warning "Failed to add 'extras' bucket: $_"
     }
 
     try {
         scoop bucket add versions
         Write-Host "✅ Added 'versions' bucket" -ForegroundColor Green
-    } catch {
+    }
+    catch {
         Write-Warning "Failed to add 'versions' bucket: $_"
     }
 
     try {
         scoop bucket add nerd-fonts
         Write-Host "✅ Added 'nerd-fonts' bucket" -ForegroundColor Green
-    } catch {
+    }
+    catch {
         Write-Warning "Failed to add 'nerd-fonts' bucket: $_"
     }
 
@@ -92,7 +96,8 @@ function Install-Fonts {
 
     if ($LASTEXITCODE -eq 0) {
         Write-Host "JetBrains Mono Nerd Font installed successfully!" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Warning "JetBrains Mono Nerd Font installation may have encountered issues."
     }
 }
@@ -120,13 +125,14 @@ function Install-EssentialApplications {
 
         if ($LASTEXITCODE -ne 0) {
             Write-Warning "Failed to install $app via Chocolatey"
-        } else {
+        }
+        else {
             Write-Host "$app installed successfully!" -ForegroundColor Green
         }
     }
 
     # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
     Write-Host "Essential applications installation completed!" -ForegroundColor Green
 }
@@ -148,7 +154,9 @@ function Install-ChocolateyTools {
         "tree",
         "ncdu",
         "httpie",
-        "duf"
+        "duf",
+        "docker-desktop",
+        "powertoys"
     )
 
     foreach ($tool in $chocoTools) {
@@ -157,13 +165,14 @@ function Install-ChocolateyTools {
 
         if ($LASTEXITCODE -ne 0) {
             Write-Warning "Failed to install $tool via Chocolatey"
-        } else {
+        }
+        else {
             Write-Host "$tool installed successfully!" -ForegroundColor Green
         }
     }
 
     # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 }
 
 # -------------------- Install CLI Tools via Scoop --------------------
@@ -189,13 +198,14 @@ function Install-ScoopTools {
 
         if ($LASTEXITCODE -ne 0) {
             Write-Warning "Failed to install $tool via Scoop"
-        } else {
+        }
+        else {
             Write-Host "$tool installed successfully!" -ForegroundColor Green
         }
     }
 
     # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 }
 
 # -------------------- Install WezTerm --------------------
@@ -206,12 +216,13 @@ function Install-WezTerm {
 
     if ($LASTEXITCODE -eq 0) {
         Write-Host "WezTerm installed successfully!" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Warning "WezTerm installation may have encountered issues."
     }
 
     # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 }
 
 # -------------------- Configure WezTerm --------------------
@@ -375,7 +386,8 @@ function Install-Chrome {
         Write-Host ""
         Write-Host "Please configure Chrome as needed (sign in, set preferences, etc.)" -ForegroundColor Cyan
         Read-Host "Press <Enter> when you're done configuring Chrome"
-    } else {
+    }
+    else {
         Write-Warning "Chrome installation may have encountered issues."
     }
 }
@@ -387,11 +399,12 @@ function Install-Git {
     choco install git -y
 
     # Refresh environment variables after Git installation
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Git installed successfully!" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Warning "Git installation may have encountered issues."
     }
 }
@@ -408,11 +421,12 @@ function Install-Starship {
     choco install starship -y
 
     # Refresh environment variables after Starship installation
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Starship installed successfully!" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Warning "Starship installation may have encountered issues."
     }
 }
@@ -548,7 +562,8 @@ function Configure-PowerShellProfile {
         try {
             $existingContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
             if ($null -eq $existingContent) { $existingContent = "" }
-        } catch {
+        }
+        catch {
             $existingContent = ""
         }
     }
@@ -718,7 +733,8 @@ Write-Host "CLI tools configuration loaded!" -ForegroundColor Green
             $verifyContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
             if ($verifyContent -and $verifyContent.Contains("CLI Tools Configuration")) {
                 Write-Host "✅ Profile configuration verified successfully!" -ForegroundColor Green
-            } else {
+            }
+            else {
                 Write-Warning "Profile may not have been written correctly. Attempting alternative method..."
 
                 # Alternative method using Add-Content
@@ -726,7 +742,8 @@ Write-Host "CLI tools configuration loaded!" -ForegroundColor Green
                 Write-Host "✅ Used alternative method to write profile" -ForegroundColor Green
             }
 
-        } catch {
+        }
+        catch {
             Write-Warning "Error writing to profile: $_"
             Write-Host "Attempting to write profile using alternative method..." -ForegroundColor Yellow
 
@@ -734,7 +751,8 @@ Write-Host "CLI tools configuration loaded!" -ForegroundColor Green
                 # Fallback method
                 $profileConfig | Add-Content -Path $PROFILE -Encoding UTF8
                 Write-Host "✅ Profile written using fallback method" -ForegroundColor Green
-            } catch {
+            }
+            catch {
                 Write-Error "Failed to write PowerShell profile: $_"
                 Write-Host "Manual intervention required. Profile path: $PROFILE" -ForegroundColor Red
                 return
@@ -746,19 +764,22 @@ Write-Host "CLI tools configuration loaded!" -ForegroundColor Green
             Write-Host "Applying configuration to current session..." -ForegroundColor Cyan
             . $PROFILE
             Write-Host "✅ Configuration applied to current session!" -ForegroundColor Green
-        } catch {
+        }
+        catch {
             Write-Warning "Could not apply configuration to current session: $_"
             Write-Host "Please restart PowerShell or run '. `$PROFILE' manually" -ForegroundColor Yellow
         }
 
-    } else {
+    }
+    else {
         Write-Host "CLI tools configuration already exists in PowerShell profile." -ForegroundColor Gray
 
         # Still try to apply it to current session
         try {
             . $PROFILE
             Write-Host "✅ Existing configuration applied to current session!" -ForegroundColor Green
-        } catch {
+        }
+        catch {
             Write-Warning "Could not apply existing configuration: $_"
         }
     }
@@ -775,7 +796,8 @@ Write-Host "CLI tools configuration loaded!" -ForegroundColor Green
 
         if ($profileSize -gt 0) {
             Write-Host "  ✅ Profile appears to have content" -ForegroundColor Green
-        } else {
+        }
+        else {
             Write-Host "  ⚠️  Profile file is empty!" -ForegroundColor Yellow
         }
     }
@@ -1069,24 +1091,24 @@ function Set-GitConfig {
     git config --global diff.colorMoved default
 
     $aliases = @{
-        st     = 'status -sb'
-        co     = 'checkout'
-        cb     = 'checkout -b'
-        cm     = 'commit -m'
-        ca     = 'commit --amend'
-        can    = 'commit --amend --no-edit'
-        br     = 'branch'
-        df     = 'diff'
-        dfs    = 'diff --staged'
-        lg     = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
-        rs     = 'reset'
-        rsh    = 'reset --hard'
-        rss    = 'reset --soft'
-        sl     = 'stash list'
-        sa     = 'stash apply'
-        ss     = 'stash save'
-        sp     = 'stash pop'
-        sshow  = 'stash show -p'
+        st    = 'status -sb'
+        co    = 'checkout'
+        cb    = 'checkout -b'
+        cm    = 'commit -m'
+        ca    = 'commit --amend'
+        can   = 'commit --amend --no-edit'
+        br    = 'branch'
+        df    = 'diff'
+        dfs   = 'diff --staged'
+        lg    = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+        rs    = 'reset'
+        rsh   = 'reset --hard'
+        rss   = 'reset --soft'
+        sl    = 'stash list'
+        sa    = 'stash apply'
+        ss    = 'stash save'
+        sp    = 'stash pop'
+        sshow = 'stash show -p'
     }
     foreach ($kvp in $aliases.GetEnumerator()) {
         git config --global ("alias." + $kvp.Key) $kvp.Value
@@ -1095,7 +1117,7 @@ function Set-GitConfig {
 
 # -------------------- Ensure Git identity --------------------
 function Ensure-UserIdentity {
-    $currentName  = git config --global user.name
+    $currentName = git config --global user.name
     $currentEmail = git config --global user.email
 
     if ([string]::IsNullOrWhiteSpace($currentName)) {
@@ -1116,15 +1138,16 @@ function Ensure-UserIdentity {
 function Ensure-SshKey {
     param([string]$Email)
 
-    $sshDir      = Join-Path $HOME ".ssh"
+    $sshDir = Join-Path $HOME ".ssh"
     $keyFileBase = Join-Path $sshDir "id_ed25519"
-    $pubKeyFile  = "${keyFileBase}.pub"
+    $pubKeyFile = "${keyFileBase}.pub"
 
     if (-not (Test-Path $pubKeyFile)) {
         if (-not (Test-Path $sshDir)) { New-Item -ItemType Directory -Path $sshDir | Out-Null }
         Write-Host "Creating a new SSH key (ed25519)..." -ForegroundColor Cyan
         ssh-keygen -t ed25519 -C "$Email" -f $keyFileBase -N '""' | Out-Null
-    } else {
+    }
+    else {
         Write-Host "SSH key already exists - skipping key generation." -ForegroundColor Gray
     }
 
@@ -1155,7 +1178,7 @@ function Install-AndConfigure-Neovim {
     Write-Host "Neovim installed successfully!" -ForegroundColor Green
 
     # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
     # Verify dependencies are installed (these should be from earlier steps)
     $dependencies = @("rg", "fd", "fzf")
@@ -1184,7 +1207,8 @@ function Install-AndConfigure-Neovim {
         try {
             git clone --filter=blob:none https://github.com/folke/lazy.nvim.git --branch=stable $lazyPath
             Write-Host "✅ lazy.nvim installed successfully!" -ForegroundColor Green
-        } catch {
+        }
+        catch {
             Write-Warning "Failed to clone lazy.nvim: $_"
             Write-Host "You may need to install it manually in Neovim" -ForegroundColor Yellow
         }
@@ -1414,7 +1438,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     try {
         $initLuaContent | Out-File -FilePath $initLuaPath -Encoding UTF8 -Force
         Write-Host "✅ Neovim configuration created at: $initLuaPath" -ForegroundColor Green
-    } catch {
+    }
+    catch {
         Write-Error "Failed to create Neovim configuration: $_"
         return
     }
@@ -1428,7 +1453,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
                 "`$env:EDITOR = 'nvim'" | Add-Content -Path $PROFILE -Encoding UTF8
                 "`$env:VISUAL = 'nvim'" | Add-Content -Path $PROFILE -Encoding UTF8
                 Write-Host "Added Neovim as default editor to PowerShell profile" -ForegroundColor Green
-            } catch {
+            }
+            catch {
                 Write-Warning "Could not add Neovim to PowerShell profile: $_"
             }
         }
@@ -1460,10 +1486,10 @@ function Install-ProgrammingLanguages {
     Write-Host "`nStep 14: Installing programming languages..." -ForegroundColor Yellow
 
     $languages = @(
-        @{Name="Node.js"; Package="nodejs"; Description="JavaScript runtime"},
-        @{Name="Go"; Package="golang"; Description="Go programming language"},
-        @{Name="Python"; Package="python"; Description="Python programming language"},
-        @{Name="Rust"; Package="rust"; Description="Rust programming language"}
+        @{Name = "Node.js"; Package = "nodejs"; Description = "JavaScript runtime" },
+        @{Name = "Go"; Package = "golang"; Description = "Go programming language" },
+        @{Name = "Python"; Package = "python"; Description = "Python programming language" },
+        @{Name = "Rust"; Package = "rust"; Description = "Rust programming language" }
     )
 
     foreach ($lang in $languages) {
@@ -1472,14 +1498,15 @@ function Install-ProgrammingLanguages {
 
         if ($LASTEXITCODE -eq 0) {
             Write-Host "✅ $($lang.Name) installed successfully!" -ForegroundColor Green
-        } else {
+        }
+        else {
             Write-Warning "❌ $($lang.Name) installation may have encountered issues."
         }
     }
 
     # Refresh environment variables after all installations
     Write-Host "Refreshing environment variables..." -ForegroundColor Cyan
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
     # Verify installations
     Write-Host ""
@@ -1497,7 +1524,8 @@ function Install-ProgrammingLanguages {
                 Write-Host "  ✅ npm: v$npmVersion" -ForegroundColor Green
             }
         }
-    } catch {
+    }
+    catch {
         Write-Host "  ❌ Node.js: Not found or not working" -ForegroundColor Red
     }
 
@@ -1507,7 +1535,8 @@ function Install-ProgrammingLanguages {
         if ($goVersion) {
             Write-Host "  ✅ Go: $($goVersion -replace 'go version ', '')" -ForegroundColor Green
         }
-    } catch {
+    }
+    catch {
         Write-Host "  ❌ Go: Not found or not working" -ForegroundColor Red
     }
 
@@ -1524,7 +1553,8 @@ function Install-ProgrammingLanguages {
                 Write-Host "  ✅ pip: v$pipVersionClean" -ForegroundColor Green
             }
         }
-    } catch {
+    }
+    catch {
         Write-Host "  ❌ Python: Not found or not working" -ForegroundColor Red
     }
 
@@ -1540,7 +1570,8 @@ function Install-ProgrammingLanguages {
                 Write-Host "  ✅ Cargo: $($cargoVersion -replace 'cargo ', '')" -ForegroundColor Green
             }
         }
-    } catch {
+    }
+    catch {
         Write-Host "  ❌ Rust: Not found or not working" -ForegroundColor Red
     }
 
@@ -1573,10 +1604,11 @@ function Install-VisualStudioCppTools {
         }
 
         # Refresh environment variables
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
         Write-Host "Visual Studio Build Tools installed successfully!" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Host "Visual Studio Installer already exists." -ForegroundColor Green
     }
 
@@ -1597,7 +1629,8 @@ function Install-VisualStudioCppTools {
     try {
         Start-Process -FilePath $vsInstallerPath -Wait:$false
         Write-Host "Visual Studio Installer opened." -ForegroundColor Green
-    } catch {
+    }
+    catch {
         Write-Warning "Failed to open Visual Studio Installer: $_"
         Write-Host "Please manually open: $vsInstallerPath" -ForegroundColor Yellow
     }
@@ -1641,14 +1674,17 @@ function Install-VisualStudioCppTools {
 
                 Write-Host "✅ Visual Studio C++ tools added to system PATH successfully!" -ForegroundColor Green
                 Write-Host "   Path added: $vcToolsPath" -ForegroundColor Gray
-            } else {
+            }
+            else {
                 Write-Host "Visual Studio C++ tools path already exists in system PATH." -ForegroundColor Gray
             }
-        } catch {
+        }
+        catch {
             Write-Warning "Failed to add Visual Studio C++ tools to PATH: $_"
             Write-Host "You may need to add this path manually: $vcToolsPath" -ForegroundColor Yellow
         }
-    } else {
+    }
+    else {
         Write-Warning "Visual Studio C++ tools directory not found at: $vcToolsPath"
         Write-Host "Please verify the C++ workload was installed correctly." -ForegroundColor Yellow
         Write-Host "You may need to manually add the MSVC tools to your PATH." -ForegroundColor Yellow
@@ -1758,7 +1794,8 @@ function Install-ConfigureTotalCommander {
             }
 
             $newContent | Out-File -FilePath $FilePath -Encoding UTF8 -Force
-        } catch {
+        }
+        catch {
             Write-Warning "Failed to set ${Section}/${Key} in ${FilePath}: $_"
         }
     }
@@ -1823,14 +1860,14 @@ function Install-ConfigureTotalCommander {
 
     # ==================== DIRECTORY HOTLIST ====================
     $commonDirs = @{
-        "Desktop" = [System.Environment]::GetFolderPath('Desktop')
+        "Desktop"   = [System.Environment]::GetFolderPath('Desktop')
         "Documents" = [System.Environment]::GetFolderPath('MyDocuments')
         "Downloads" = "$env:USERPROFILE\Downloads"
-        "Pictures" = [System.Environment]::GetFolderPath('MyPictures')
-        "Videos" = [System.Environment]::GetFolderPath('MyVideos')
-        "Music" = [System.Environment]::GetFolderPath('MyMusic')
-        "Projects" = "$env:USERPROFILE\Projects"
-        "Temp" = $env:TEMP
+        "Pictures"  = [System.Environment]::GetFolderPath('MyPictures')
+        "Videos"    = [System.Environment]::GetFolderPath('MyVideos')
+        "Music"     = [System.Environment]::GetFolderPath('MyMusic')
+        "Projects"  = "$env:USERPROFILE\Projects"
+        "Temp"      = $env:TEMP
     }
 
     $index = 1
@@ -1859,7 +1896,8 @@ function Install-ConfigureTotalCommander {
         Set-IniValue $wincmdIni "Buttonbar" "button2" "pwsh"
         Set-IniValue $wincmdIni "Buttonbar" "iconic2" "0"
         Set-IniValue $wincmdIni "Buttonbar" "tooltip2" "Open PowerShell"
-    } elseif (Get-Command powershell -ErrorAction SilentlyContinue) {
+    }
+    elseif (Get-Command powershell -ErrorAction SilentlyContinue) {
         Set-IniValue $wincmdIni "Buttonbar" "button2" "powershell"
         Set-IniValue $wincmdIni "Buttonbar" "iconic2" "0"
         Set-IniValue $wincmdIni "Buttonbar" "tooltip2" "Open PowerShell"
@@ -1946,7 +1984,7 @@ function Install-ConfigureTotalCommander {
     Set-IniValue $wincmdIni "Configuration" "ShowSeconds" "1"
 
     # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
     Write-Host "✅ Total Commander installation and configuration completed!" -ForegroundColor Green
     Write-Host ""
@@ -1982,7 +2020,7 @@ function Install-VSCode {
     Write-Host "✅ VSCode installed successfully!" -ForegroundColor Green
 
     # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
     # Wait for VSCode to be available
     Write-Host "Waiting for VSCode to be available..." -ForegroundColor Cyan
@@ -1992,7 +2030,7 @@ function Install-VSCode {
     Write-Host "Installing essential VS Code extensions..." -ForegroundColor Cyan
 
     $essentialExtensions = @(
-    # Vim Extension (priority)
+        # Vim Extension (priority)
         "vscodevim.vim",                      # Vim
 
         # Language Support
@@ -2062,10 +2100,12 @@ function Install-VSCode {
             $result = & code --install-extension $extension --force 2>&1
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "  ✅ $extension installed successfully" -ForegroundColor Green
-            } else {
+            }
+            else {
                 Write-Warning "  ⚠️  $extension installation may have issues: $result"
             }
-        } catch {
+        }
+        catch {
             Write-Warning "  ❌ Failed to install ${extension}: $_"
         }
 
@@ -2090,65 +2130,65 @@ function Install-VSCode {
 
     # Create or update settings.json with Vim configuration
     $vimSettings = @{
-    # Enable Vim extension
-        "vim.easymotion" = $true
-        "vim.incsearch" = $true
-        "vim.useSystemClipboard" = $true
-        "vim.useCtrlKeys" = $true
-        "vim.hlsearch" = $true
-        "vim.insertModeKeyBindings" = @()
+        # Enable Vim extension
+        "vim.easymotion"                        = $true
+        "vim.incsearch"                         = $true
+        "vim.useSystemClipboard"                = $true
+        "vim.useCtrlKeys"                       = $true
+        "vim.hlsearch"                          = $true
+        "vim.insertModeKeyBindings"             = @()
         "vim.normalModeKeyBindingsNonRecursive" = @(
             @{
-                "before" = @("``", "``")
+                "before"   = @("``", "``")
                 "commands" = @("workbench.action.terminal.toggleTerminal")
             },
             @{
-                "before" = @("leader", "e")
+                "before"   = @("leader", "e")
                 "commands" = @("workbench.view.explorer")
             },
             @{
-                "before" = @("leader", "f")
+                "before"   = @("leader", "f")
                 "commands" = @("workbench.action.quickOpen")
             },
             @{
-                "before" = @("leader", "g")
+                "before"   = @("leader", "g")
                 "commands" = @("workbench.action.findInFiles")
             },
             @{
-                "before" = @("leader", "s")
+                "before"   = @("leader", "s")
                 "commands" = @("workbench.action.files.save")
             },
             @{
-                "before" = @("leader", "w")
+                "before"   = @("leader", "w")
                 "commands" = @("workbench.action.closeActiveEditor")
             },
             @{
-                "before" = @("leader", "q")
+                "before"   = @("leader", "q")
                 "commands" = @("workbench.action.closeWindow")
             },
             @{
-                "before" = @("g", "h")
+                "before"   = @("g", "h")
                 "commands" = @("editor.action.showHover")
             },
             @{
-                "before" = @("g", "d")
+                "before"   = @("g", "d")
                 "commands" = @("editor.action.revealDefinition")
             },
             @{
-                "before" = @("g", "r")
+                "before"   = @("g", "r")
                 "commands" = @("editor.action.goToReferences")
             },
             @{
-                "before" = @("leader", "t")
+                "before"   = @("leader", "t")
                 "commands" = @("gruntfuggly.todo-tree.show")
             },
             @{
-                "before" = @("leader", "b")
+                "before"   = @("leader", "b")
                 "commands" = @("alefragnani.bookmarks.toggle")
             }
         )
-        "vim.leader" = " "
-        "vim.handleKeys" = @{
+        "vim.leader"                            = " "
+        "vim.handleKeys"                        = @{
             "<C-a>" = $false
             "<C-f>" = $false
             "<C-c>" = $false
@@ -2159,105 +2199,105 @@ function Install-VSCode {
         }
         "vim.visualModeKeyBindingsNonRecursive" = @(
             @{
-                "before" = @("leader", "c")
+                "before"   = @("leader", "c")
                 "commands" = @("editor.action.commentLine")
             }
         )
 
         # Editor settings that complement Vim
-        "editor.lineNumbers" = "relative"
-        "editor.cursorBlinking" = "solid"
-        "editor.scrollBeyondLastLine" = $false
-        "editor.minimap.enabled" = $false
-        "editor.wordWrap" = "off"
-        "editor.rulers" = @(80, 120)
-        "editor.fontFamily" = "JetBrains Mono, Consolas, 'Courier New', monospace"
-        "editor.fontSize" = 14
-        "editor.fontLigatures" = $true
-        "editor.tabSize" = 4
-        "editor.insertSpaces" = $true
-        "editor.renderWhitespace" = "boundary"
-        "editor.formatOnSave" = $true
-        "editor.formatOnPaste" = $true
+        "editor.lineNumbers"                    = "relative"
+        "editor.cursorBlinking"                 = "solid"
+        "editor.scrollBeyondLastLine"           = $false
+        "editor.minimap.enabled"                = $false
+        "editor.wordWrap"                       = "off"
+        "editor.rulers"                         = @(80, 120)
+        "editor.fontFamily"                     = "JetBrains Mono, Consolas, 'Courier New', monospace"
+        "editor.fontSize"                       = 14
+        "editor.fontLigatures"                  = $true
+        "editor.tabSize"                        = 4
+        "editor.insertSpaces"                   = $true
+        "editor.renderWhitespace"               = "boundary"
+        "editor.formatOnSave"                   = $true
+        "editor.formatOnPaste"                  = $true
 
         # Workbench settings
-        "workbench.colorTheme" = "One Dark Pro"
-        "workbench.iconTheme" = "material-icon-theme"
-        "workbench.startupEditor" = "none"
-        "workbench.editor.enablePreview" = $false
-        "workbench.editor.showTabs" = $true
+        "workbench.colorTheme"                  = "One Dark Pro"
+        "workbench.iconTheme"                   = "material-icon-theme"
+        "workbench.startupEditor"               = "none"
+        "workbench.editor.enablePreview"        = $false
+        "workbench.editor.showTabs"             = $true
 
         # Terminal settings
-        "terminal.integrated.fontFamily" = "JetBrains Mono"
-        "terminal.integrated.fontSize" = 12
-        "terminal.integrated.shell.windows" = "powershell.exe"
+        "terminal.integrated.fontFamily"        = "JetBrains Mono"
+        "terminal.integrated.fontSize"          = 12
+        "terminal.integrated.shell.windows"     = "powershell.exe"
 
         # File explorer
-        "explorer.confirmDelete" = $false
-        "explorer.confirmDragAndDrop" = $false
+        "explorer.confirmDelete"                = $false
+        "explorer.confirmDragAndDrop"           = $false
 
         # Extensions configuration
-        "extensions.autoUpdate" = $true
+        "extensions.autoUpdate"                 = $true
 
         # GitLens configuration
-        "gitlens.mode.active" = "zen"
-        "gitlens.hovers.currentLine.over" = "line"
-        "gitlens.currentLine.enabled" = $true
+        "gitlens.mode.active"                   = "zen"
+        "gitlens.hovers.currentLine.over"       = "line"
+        "gitlens.currentLine.enabled"           = $true
 
         # TODO Tree configuration
-        "todo-tree.general.tags" = @("BUG", "HACK", "FIXME", "TODO", "XXX", "[ ]", "[x]")
-        "todo-tree.regex.regex" = "((//|#|<!--|;|/\*|^)\s*(`$TAGS)|^\s*- \[ \])"
+        "todo-tree.general.tags"                = @("BUG", "HACK", "FIXME", "TODO", "XXX", "[ ]", "[x]")
+        "todo-tree.regex.regex"                 = "((//|#|<!--|;|/\*|^)\s*(`$TAGS)|^\s*- \[ \])"
 
         # Better Comments configuration
-        "better-comments.multilineComments" = $true
-        "better-comments.highlightPlainText" = $false
+        "better-comments.multilineComments"     = $true
+        "better-comments.highlightPlainText"    = $false
 
         # Prettier configuration
-        "prettier.singleQuote" = $true
-        "prettier.semi" = $false
-        "prettier.tabWidth" = 2
+        "prettier.singleQuote"                  = $true
+        "prettier.semi"                         = $false
+        "prettier.tabWidth"                     = 2
 
         # Search
-        "search.exclude" = @{
-            "**/node_modules" = $true
+        "search.exclude"                        = @{
+            "**/node_modules"     = $true
             "**/bower_components" = $true
-            "**/.git" = $true
-            "**/.DS_Store" = $true
-            "**/dist" = $true
-            "**/build" = $true
+            "**/.git"             = $true
+            "**/.DS_Store"        = $true
+            "**/dist"             = $true
+            "**/build"            = $true
         }
 
         # Files
-        "files.autoSave" = "onFocusChange"
-        "files.trimTrailingWhitespace" = $true
-        "files.insertFinalNewline" = $true
+        "files.autoSave"                        = "onFocusChange"
+        "files.trimTrailingWhitespace"          = $true
+        "files.insertFinalNewline"              = $true
 
         # Language specific settings
-        "[python]" = @{
+        "[python]"                              = @{
             "editor.defaultFormatter" = "ms-python.python"
-            "editor.tabSize" = 4
+            "editor.tabSize"          = 4
         }
-        "[javascript]" = @{
+        "[javascript]"                          = @{
             "editor.defaultFormatter" = "esbenp.prettier-vscode"
-            "editor.tabSize" = 2
+            "editor.tabSize"          = 2
         }
-        "[typescript]" = @{
+        "[typescript]"                          = @{
             "editor.defaultFormatter" = "esbenp.prettier-vscode"
-            "editor.tabSize" = 2
+            "editor.tabSize"          = 2
         }
-        "[json]" = @{
+        "[json]"                                = @{
             "editor.defaultFormatter" = "esbenp.prettier-vscode"
-            "editor.tabSize" = 2
+            "editor.tabSize"          = 2
         }
-        "[html]" = @{
+        "[html]"                                = @{
             "editor.defaultFormatter" = "esbenp.prettier-vscode"
-            "editor.tabSize" = 2
+            "editor.tabSize"          = 2
         }
-        "[css]" = @{
+        "[css]"                                 = @{
             "editor.defaultFormatter" = "esbenp.prettier-vscode"
-            "editor.tabSize" = 2
+            "editor.tabSize"          = 2
         }
-        "[powershell]" = @{
+        "[powershell]"                          = @{
             "editor.tabSize" = 4
         }
     }
@@ -2270,32 +2310,32 @@ function Install-VSCode {
     # Create keybindings.json for additional shortcuts
     $keybindings = @(
         @{
-            "key" = "ctrl+``"
+            "key"     = "ctrl+``"
             "command" = "workbench.action.terminal.toggleTerminal"
         },
         @{
-            "key" = "ctrl+shift+``"
+            "key"     = "ctrl+shift+``"
             "command" = "workbench.action.terminal.new"
         },
         @{
-            "key" = "ctrl+shift+e"
+            "key"     = "ctrl+shift+e"
             "command" = "workbench.view.explorer"
-            "when" = "!terminalFocus"
+            "when"    = "!terminalFocus"
         },
         @{
-            "key" = "ctrl+p"
+            "key"     = "ctrl+p"
             "command" = "workbench.action.quickOpen"
-            "when" = "!terminalFocus"
+            "when"    = "!terminalFocus"
         },
         @{
-            "key" = "ctrl+shift+f"
+            "key"     = "ctrl+shift+f"
             "command" = "workbench.action.findInFiles"
-            "when" = "!terminalFocus"
+            "when"    = "!terminalFocus"
         },
         @{
-            "key" = "ctrl+shift+g"
+            "key"     = "ctrl+shift+g"
             "command" = "workbench.view.scm"
-            "when" = "!terminalFocus"
+            "when"    = "!terminalFocus"
         }
     )
 
@@ -2417,7 +2457,8 @@ try {
     Write-Host "  - Run: . `$PROFILE" -ForegroundColor White
     Write-Host "  - Launch WezTerm to use the new terminal!" -ForegroundColor White
 
-} catch {
+}
+catch {
     Write-Error "An error occurred: $_"
     Write-Host "Please check the error message above and try running the script as Administrator." -ForegroundColor Red
     exit 1
