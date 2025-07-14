@@ -2464,5 +2464,9 @@ catch {
     exit 1
 }
 
+Write-Host "- Install WSL Ubuntu"
+wsl --install
+Write-Host " WSL Ubuntu instation complete"
+
 Write-Host "`nPress any key to exit..." -ForegroundColor Gray
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
